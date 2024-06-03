@@ -8,7 +8,7 @@
   "scripts": {
     "build": "tsup",
     "patch": "npm version patch",
-    "publish": "tsup && if [ $? -eq 0 ]; then npm publish --access=public; else echo 'Failed to compile TypeScript files'; fi"
+    "publish": "tsup && npm publish --access=public && exit"
   },
   "repository": {
     "type": "git",
