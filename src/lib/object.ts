@@ -9,16 +9,35 @@ const TIMEOUT_WITHIN = 60000;
 const connectionManager = new Map<string, DatabaseObject>();
 
 /**
+ * Checks if the session object is initialized in the request.
+ *
+ * @param req - The request object.
+ * @throws DatabaseError - If the session object is not yet initialized.
+ */
+const checkSessionObject = (req: TralseRequest): void => {
+  if (!req.session)
+    throw new DatabaseError(
+      "Session object is not yet initialized. Make sure that you have configured your session."
+    );
+};
+
+/**
  * Sets the connection ID in the request session.
  *
  * @param req - The request object.
  * @param id - The connection ID to set.
+ * @throws DatabaseError - If there is an error setting the connection ID.
  */
 const setConnectionId = (req: TralseRequest, id: string): void => {
-  req.session = {};
-  req.session.tralse_db_mysql = {
-    connectionId: id,
-  };
+  try {
+    checkSessionObject(req);
+    req.session = {};
+    req.session.tralse_db_mysql = {
+      connectionId: id,
+    };
+  } catch (error: any) {
+    throw new DatabaseError(error.message);
+  }
 };
 
 /**
@@ -26,16 +45,20 @@ const setConnectionId = (req: TralseRequest, id: string): void => {
  *
  * @param req - The request object.
  * @returns The connection ID.
- * @throws DatabaseError - If the connection is not initialized.
+ * @throws DatabaseError - If the connection is not initialized or there is an error getting the connection ID.
  */
 const getConnectionId = (req: TralseRequest): string => {
-  if (
-    !req.session.tralse_db_mysql ||
-    !req.session.tralse_db_mysql.connectionId
-  ) {
-    throw new DatabaseError("Connection is not yet initialized.");
+  try {
+    if (
+      !req.session.tralse_db_mysql ||
+      !req.session.tralse_db_mysql.connectionId
+    ) {
+      throw new DatabaseError("Connection is not yet initialized.");
+    }
+    return req.session.tralse_db_mysql.connectionId;
+  } catch (error: any) {
+    throw new DatabaseError(error.message);
   }
-  return req.session.tralse_db_mysql.connectionId;
 };
 
 /**
