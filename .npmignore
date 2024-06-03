@@ -1,0 +1,6 @@
+/tralsedb-express-mysql
+/src
+/node_modules
+
+tsconfig.json
+tsup.config.ts

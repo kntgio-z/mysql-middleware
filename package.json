@@ -1,0 +1,28 @@
+{
+  "name": "@tralse/mysql-middleware",
+  "version": "0.0.0",
+  "description": "This package provides a middleware for modularized and remodified modules on MYSQL database, providing a robust development.",
+  "main": "./dist/index.js",
+  "module": "./dist/index.mjs",
+  "types": "./dist/index.d.ts",
+  "scripts": {
+    "build": "tsup"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/kntgio-z/mysql-middleware.git"
+  },
+  "author": "Gio Kent",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/kntgio-z/mysql-middleware/issues"
+  },
+  "homepage": "https://github.com/kntgio-z/mysql-middleware#readme",
+  "devDependencies": {
+    "tsup": "^8.1.0",
+    "typescript": "^5.4.5"
+  },
+  "dependencies": {
+    "mysql2": "^3.10.0"
+  }
+}
