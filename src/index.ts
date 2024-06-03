@@ -14,7 +14,7 @@ import {
   TralseResponse,
   TralseNext,
 } from "./types";
-
+import { log } from "./util/log";
 /**
  * Initializes the database and provides query and transaction methods.
  *
@@ -41,8 +41,8 @@ const initializeDatabase = async (
     try {
       const connection = await pool.getConnection();
       serializeConnection(req, connection);
-    } catch (error) {
-      console.log(error);
+    } catch (error: any) {
+      log.magenta(error.message);
       throw new DatabaseError(`Error initializing database. ${error}`);
     }
   };

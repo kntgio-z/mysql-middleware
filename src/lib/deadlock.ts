@@ -1,6 +1,6 @@
 import { DatabaseError } from "../errors/error";
 import { QueryFunction } from "../types";
-
+import { log } from "../util/log";
 export const manageDeadlocks = async (
   maxRetries: number,
   queryFunction: QueryFunction,
@@ -9,8 +9,8 @@ export const manageDeadlocks = async (
   const executeQueryWithRetries = async (
     retryCount: number = 0
   ): Promise<any> => {
-    console.log("In deadlock");
-    
+    log.magenta("In deadlock");
+
     try {
       return await queryFunction();
     } catch (error: any) {
@@ -27,7 +27,7 @@ export const manageDeadlocks = async (
         await new Promise((resolve) => setTimeout(resolve, backoffTime));
         return executeQueryWithRetries(retryCount + 1);
       } else {
-        console.log(error);
+        log.magenta(error);
         throw new DatabaseError(
           `Database error after ${maxRetries} retries: ${error.message}`
         );
