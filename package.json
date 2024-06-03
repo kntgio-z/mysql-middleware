@@ -1,6 +1,6 @@
 {
   "name": "@tralse/mysql-middleware",
-  "version": "0.0.0",
+  "version": "0.0.1",
   "description": "This package provides a middleware for modularized and remodified modules on MYSQL database, providing a robust development.",
   "main": "./dist/index.js",
   "module": "./dist/index.mjs",
