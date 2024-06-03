@@ -15,6 +15,7 @@ const connectionManager = new Map<string, DatabaseObject>();
  * @param id - The connection ID to set.
  */
 const setConnectionId = (req: TralseRequest, id: string): void => {
+  req.session = {};
   req.session.tralse_db_mysql = {
     connectionId: id,
   };
