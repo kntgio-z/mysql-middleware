@@ -15,8 +15,7 @@ const connectionManager = new Map<string, DatabaseObject>();
  * @param id - The connection ID to set.
  */
 const setConnectionId = (req: TralseRequest, id: string): void => {
- req.session.tralse_db_mysql = {
-    ...req.session.tralse_db_mysql,
+  req.session.tralse_db_mysql = {
     connectionId: id,
   };
 };
@@ -44,7 +43,10 @@ const getConnectionId = (req: TralseRequest): string => {
  * @param req - The request object.
  * @param connection - The MySQL connection to serialize.
  */
-export const serializeConnection = (req: TralseRequest, connection: Connection): void => {
+export const serializeConnection = (
+  req: TralseRequest,
+  connection: Connection
+): void => {
   // Obtain the connection ID from the threadId of the connection
   const connectionId = connection.threadId.toString();
   // Set the connection ID in the request session
@@ -72,7 +74,7 @@ export const serializeConnection = (req: TralseRequest, connection: Connection):
  */
 export const deserializeConnection = (
   req: TralseRequest
-): { id: string; data: DatabaseObject} => {
+): { id: string; data: DatabaseObject } => {
   // Obtain the connection ID from the request session
   const connectionId = getConnectionId(req);
   // Check if the connection ID exists in the connectionManager
