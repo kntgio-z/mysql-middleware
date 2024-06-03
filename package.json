@@ -6,7 +6,9 @@
   "module": "./dist/index.mjs",
   "types": "./dist/index.d.ts",
   "scripts": {
-    "build": "tsup"
+    "build": "tsup",
+    "patch": "npm version patch",
+    "publish": "tsup && npm publish --access=public"
   },
   "repository": {
     "type": "git",
