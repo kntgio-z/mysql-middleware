@@ -7,7 +7,7 @@ import { executeDbQuery } from "./lib/query";
 import { DatabaseError } from "./errors/error";
 import { initializeDbTransaction } from "./lib/transactions";
 import { Pool } from "mysql2/promise";
-import { DatabaseInstance, DatabaseObject, TransactionMethods } from "./types";
+import { DatabaseInstance, TransactionMethods } from "./types";
 
 /**
  * Initializes the database and provides query and transaction methods.
@@ -48,7 +48,7 @@ const initializeDatabase = async (
   const releaseConnection = async (): Promise<void> => {
     const { connection } = getDbObject(req);
     dispatchDbObject(req);
-    await connection.release();
+    await connection.end();
   };
 
   const terminate = async (): Promise<void> => {
@@ -76,9 +76,31 @@ const initializeDatabase = async (
  * @param enableTransactions - Whether to enable transaction support.
  * @returns The middleware function.
  */
-export const TralseMySQL =
-  (pool: Pool, dbName: string, enableTransactions: boolean = false) =>
-  async (req: any, res: any, next: any): Promise<void> => {
+export const TralseMySQL = async (
+  pool: Pool,
+  dbName: string,
+  enableTransactions: boolean = false
+) => {
+  try {
+    // Attempt to import mysql2
+    await import("mysql2");
+  } catch (error) {
+    // Throw an error if mysql2 is not installed
+    throw new Error(
+      "mysql2 package is required but not installed. Please install it by running: npm install mysql2"
+    );
+  }
+  try {
+    // Attempt to import express
+    await import("express");
+  } catch (error) {
+    // Throw an error if express is not installed
+    throw new Error(
+      "express package is required but not installed. Please install it by running: npm install express"
+    );
+  }
+
+  return async (req: any, res: any, next: any): Promise<void> => {
     try {
       req.tralse_db_mysql = req.tralse_db_mysql || {};
       const dbInstance = await initializeDatabase(
@@ -98,5 +120,6 @@ export const TralseMySQL =
       });
     }
   };
+};
 
-  export * from "./types/index";
+export * from "./types/index";
