@@ -1,7 +1,24 @@
 import { Connection } from "mysql2/promise";
-
+import { Request, Response, NextFunction } from "express";
+import { SessionData } from "express-session";
 // TODO: Revise
 export type QueryFunction = () => Promise<any>;
+
+interface TralseSessionData extends SessionData {
+  tralse_db_mysql: {
+    connectionId: string;
+  };
+}
+
+export interface TralseRequest extends Request {
+  session: TralseSessionData | any;
+  tralse_db_mysql: {
+    [key: string]: DatabaseInstance;
+  }
+}
+
+export interface TralseResponse extends Response {}
+export interface TralseNext extends NextFunction {}
 
 /**
  * Interface for DatabaseObject
@@ -9,7 +26,7 @@ export type QueryFunction = () => Promise<any>;
 export interface DatabaseObject {
   connection: Connection;
   referenceNo?: string | null;
-  timeoutId?: number;
+  timeoutId?: string;
 }
 
 export interface DatabaseInstance {

@@ -2,7 +2,7 @@ import { getDbObject, updateDbObject } from "./object";
 import { TransactionError, DatabaseError } from "../errors/error";
 import { manageDeadlocks } from "./deadlock";
 import { TransactionMethods } from "../types";
-
+import { TralseRequest } from "../types";
 
 /**
  * Initializes a transaction.
@@ -14,7 +14,7 @@ import { TransactionMethods } from "../types";
  * @throws TransactionError - If there is an error initializing the transaction.
  */
 export const initializeDbTransaction = async (
-  req: any,
+  req: TralseRequest,
   dbName: string,
   isolationLevel: string = "READ COMMITTED"
 ): Promise<TransactionMethods> => {

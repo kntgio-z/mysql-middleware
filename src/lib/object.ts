@@ -1,5 +1,7 @@
 import { DatabaseError } from "../errors/error";
 import { DatabaseObject } from "../types";
+import { TralseRequest } from "../types";
+import { Connection } from "mysql2/promise";
 
 const TIMEOUT_WITHIN = 60000;
 
@@ -12,8 +14,8 @@ const connectionManager = new Map<string, DatabaseObject>();
  * @param req - The request object.
  * @param id - The connection ID to set.
  */
-const setConnectionId = (req: any, id: string): void => {
-  req.session.tralse_db_mysql = {
+const setConnectionId = (req: TralseRequest, id: string): void => {
+ req.session.tralse_db_mysql = {
     ...req.session.tralse_db_mysql,
     connectionId: id,
   };
@@ -26,7 +28,7 @@ const setConnectionId = (req: any, id: string): void => {
  * @returns The connection ID.
  * @throws DatabaseError - If the connection is not initialized.
  */
-const getConnectionId = (req: any): string => {
+const getConnectionId = (req: TralseRequest): string => {
   if (
     !req.session.tralse_db_mysql ||
     !req.session.tralse_db_mysql.connectionId
@@ -42,13 +44,13 @@ const getConnectionId = (req: any): string => {
  * @param req - The request object.
  * @param connection - The MySQL connection to serialize.
  */
-export const serializeConnection = (req: any, connection: Connection): void => {
+export const serializeConnection = (req: TralseRequest, connection: Connection): void => {
   // Obtain the connection ID from the threadId of the connection
   const connectionId = connection.threadId.toString();
   // Set the connection ID in the request session
   setConnectionId(req, connectionId);
   // Store the connection in the connectionManager with its ID as key
-  const connectionData: DatabaseObject & { timeoutId?: NodeJS.Timeout } = {
+  const connectionData: DatabaseObject = {
     connection,
   };
   connectionManager.set(connectionId, connectionData);
@@ -58,7 +60,7 @@ export const serializeConnection = (req: any, connection: Connection): void => {
     connectionManager.delete(connectionId);
     clearTimeout(timeoutId);
   }, TIMEOUT_WITHIN);
-  connectionData.timeoutId = timeoutId;
+  connectionData.timeoutId = timeoutId.toString();
 };
 
 /**
@@ -69,8 +71,8 @@ export const serializeConnection = (req: any, connection: Connection): void => {
  * @throws DatabaseError - If the connection key is not found.
  */
 export const deserializeConnection = (
-  req: any
-): { id: string; data: DatabaseObject & { timeoutId?: NodeJS.Timeout } } => {
+  req: TralseRequest
+): { id: string; data: DatabaseObject} => {
   // Obtain the connection ID from the request session
   const connectionId = getConnectionId(req);
   // Check if the connection ID exists in the connectionManager
@@ -89,7 +91,7 @@ export const deserializeConnection = (
  * @param req - The request object.
  * @returns The retrieved database object.
  */
-export const getDbObject = (req: any): DatabaseObject => {
+export const getDbObject = (req: TralseRequest): DatabaseObject => {
   // Deserialize the connection data from the request
   const { data } = deserializeConnection(req);
   // Return the database object
@@ -103,7 +105,7 @@ export const getDbObject = (req: any): DatabaseObject => {
  * @param updateData - The new properties to update.
  */
 export const updateDbObject = (
-  req: any,
+  req: TralseRequest,
   updateData: Partial<DatabaseObject>
 ): void => {
   // Deserialize the connection data from the request
@@ -118,7 +120,7 @@ export const updateDbObject = (
  * @param req - The request object.
  * @throws DatabaseError - If the database object is not found.
  */
-export const dispatchDbObject = (req: any): void => {
+export const dispatchDbObject = (req: TralseRequest): void => {
   // Deserialize the connection data from the request
   const { id } = deserializeConnection(req);
   // Remove the database object from the connectionManager

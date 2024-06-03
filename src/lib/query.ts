@@ -2,6 +2,7 @@ import { manageDeadlocks } from "./deadlock";
 import { DatabaseError } from "../errors/error";
 import { getDbObject } from "./object";
 import { RowDataPacket } from "mysql2/promise";
+import { TralseRequest } from "../types";
 
 type QueryResult = RowDataPacket[];
 
@@ -16,7 +17,7 @@ type QueryResult = RowDataPacket[];
  * @throws DatabaseError - If query execution fails.
  */
 export const executeDbQuery = async (
-  req: any,
+  req: TralseRequest,
   dbName: string,
   sql: string | string[],
   params: any[] | any[][] = []
