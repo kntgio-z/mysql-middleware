@@ -31,32 +31,65 @@ const initializeDatabase = async (
   dbName: string,
   enableTransactions: boolean
 ): Promise<DatabaseInstance> => {
+  /**
+   * Initializes a mysql connection and serializes it into the request.
+   *
+   * @returns A promise that resolves when the connection is initialized.
+   * @throws DatabaseError - If there is an error initializing the database connection.
+   */
   const initializeConnection = async (): Promise<void> => {
     try {
       const connection = await pool.getConnection();
       serializeConnection(req, connection);
     } catch (error) {
       console.log(error);
-      throw new DatabaseError(`Error initializing database.${error}`);
+      throw new DatabaseError(`Error initializing database. ${error}`);
     }
   };
 
+  /**
+   * Executes a database query.
+   *
+   * @param sql - The SQL query string to execute.
+   * @param params - The parameters for the SQL query.
+   * @returns A promise that resolves with the query result.
+   * @throws DatabaseError - If there is an error executing the query.
+   */
   const query = async (sql: string, params: any[] = []): Promise<any> => {
     return await executeDbQuery(req, dbName, sql, params);
   };
 
+  /**
+   * Begins a database transaction with the specified isolation level.
+   *
+   * @param isolationLevel - The isolation level for the transaction. Defaults to "READ COMMITTED".
+   * @returns A promise that resolves with the transaction methods.
+   * @throws DatabaseError - If there is an error initializing the transaction.
+   */
   const transaction = async (
     isolationLevel: string = "READ COMMITTED"
   ): Promise<TransactionMethods> => {
     return await initializeDbTransaction(req, dbName, isolationLevel);
   };
 
+  /**
+   * Releases the current mysql connection.
+   *
+   * @returns A promise that resolves when the connection is released.
+   * @throws DatabaseError - If there is an error releasing the connection.
+   */
   const releaseConnection = async (): Promise<void> => {
     const { connection } = getDbObject(req);
     dispatchDbObject(req);
     await connection.end();
   };
 
+  /**
+   * Terminates the mysql connection pool.
+   *
+   * @returns A promise that resolves when the connection pool is terminated.
+   * @throws DatabaseError - If there is an error terminating the connection pool.
+   */
   const terminate = async (): Promise<void> => {
     if (pool) {
       try {

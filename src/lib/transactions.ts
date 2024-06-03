@@ -19,6 +19,16 @@ export const initializeDbTransaction = async (
   isolationLevel: string = "READ COMMITTED"
 ): Promise<TransactionMethods> => {
   return await manageDeadlocks(3, async () => {
+    /**
+     * Initializes a transaction, executes the provided SQL queries with parameters, and generates a reference number.
+     *
+     * @param sql - The SQL query or an array of SQL queries to execute.
+     * @param params - The parameters for the SQL query or an array of parameters for multiple queries.
+     * @param generateReferenceNo - An optional function to generate a reference number for the transaction.
+     * @returns A promise that resolves with the result of the SQL query or an array of results for multiple queries.
+     * @throws DatabaseError - If there is a mismatch between SQL queries and parameters or any other error occurs during execution.
+     * @throws TransactionError - If the transaction initialization fails.
+     */
     const initTransaction = async (
       sql: string | string[],
       params: any | any[] = [],
@@ -60,6 +70,12 @@ export const initializeDbTransaction = async (
       }
     };
 
+    /**
+     * Commits the current transaction.
+     *
+     * @returns A promise that resolves when the transaction is committed.
+     * @throws TransactionError - If the transaction commit fails.
+     */
     const commitTransaction = async (): Promise<void> => {
       const { connection, referenceNo } = getDbObject(req);
 
@@ -73,6 +89,12 @@ export const initializeDbTransaction = async (
       }
     };
 
+    /**
+     * Rolls back the current transaction.
+     *
+     * @returns A promise that resolves when the transaction is rolled back.
+     * @throws TransactionError - If the transaction rollback fails.
+     */
     const rollbackTransaction = async (): Promise<void> => {
       const { connection, referenceNo } = getDbObject(req);
 
@@ -85,6 +107,11 @@ export const initializeDbTransaction = async (
       }
     };
 
+    /**
+     * Retrieves the database object and additional connection status.
+     *
+     * @returns An object containing the connection status and other properties from the database object.
+     */
     const retrieveRecords = (): { connection: string; [key: string]: any } => {
       let dbObject;
       try {
