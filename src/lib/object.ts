@@ -36,7 +36,6 @@ const setConnectionId = (req: TralseRequest, id: string): void => {
     console.log("Setting connection id");
     
     checkSessionObject(req);
-    req.session = {};
     req.session.tralse_db_mysql = {
       connectionId: id,
     };
