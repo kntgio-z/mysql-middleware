@@ -19,6 +19,7 @@
   },
   "homepage": "https://github.com/kntgio-z/mysql-middleware#readme",
   "devDependencies": {
+    "@types/express": "^4.17.21",
     "tsup": "^8.1.0",
     "typescript": "^5.4.5"
   },
