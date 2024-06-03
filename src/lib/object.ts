@@ -15,10 +15,13 @@ const connectionManager = new Map<string, DatabaseObject>();
  * @throws DatabaseError - If the session object is not yet initialized.
  */
 const checkSessionObject = (req: TralseRequest): void => {
+  console.log("In checkSessionObject, checking session");
   if (!req.session)
     throw new DatabaseError(
       "Session object is not yet initialized. Make sure that you have configured your session."
     );
+    console.log("Session exists");
+    
 };
 
 /**
@@ -30,11 +33,16 @@ const checkSessionObject = (req: TralseRequest): void => {
  */
 const setConnectionId = (req: TralseRequest, id: string): void => {
   try {
+    console.log("Setting connection id");
+    
     checkSessionObject(req);
     req.session = {};
     req.session.tralse_db_mysql = {
       connectionId: id,
     };
+
+    console.log("Connection set. tralse_db_mysql initialized in session.");
+    
   } catch (error: any) {
     throw new DatabaseError(error.message);
   }
@@ -49,12 +57,15 @@ const setConnectionId = (req: TralseRequest, id: string): void => {
  */
 const getConnectionId = (req: TralseRequest): string => {
   try {
+    console.log("Getting connection id");
+    
     if (
       !req.session.tralse_db_mysql ||
       !req.session.tralse_db_mysql.connectionId
     ) {
       throw new DatabaseError("Connection is not yet initialized.");
     }
+    console.log("Connection fetched");
     return req.session.tralse_db_mysql.connectionId;
   } catch (error: any) {
     throw new DatabaseError(error.message);
@@ -71,6 +82,8 @@ export const serializeConnection = (
   req: TralseRequest,
   connection: Connection
 ): void => {
+  console.log("Serializing connection");
+  
   // Obtain the connection ID from the threadId of the connection
   const connectionId = connection.threadId.toString();
   // Set the connection ID in the request session
@@ -80,13 +93,18 @@ export const serializeConnection = (
     connection,
   };
   connectionManager.set(connectionId, connectionData);
-
+  console.log("Set into connectionManager, setting timeout id");
+  
   // Set up timeout to delete connection if not settled within 1 minute
   const timeoutId = setTimeout(() => {
     connectionManager.delete(connectionId);
     clearTimeout(timeoutId);
+    console.log("Stale connection deleted.");
+    
   }, TIMEOUT_WITHIN);
   connectionData.timeoutId = timeoutId.toString();
+  console.log("timeout id set.");
+  
 };
 
 /**
@@ -99,10 +117,14 @@ export const serializeConnection = (
 export const deserializeConnection = (
   req: TralseRequest
 ): { id: string; data: DatabaseObject } => {
+  console.log("Deserializing connection");
+  
   // Obtain the connection ID from the request session
   const connectionId = getConnectionId(req);
   // Check if the connection ID exists in the connectionManager
   if (connectionManager.has(connectionId)) {
+    console.log("Serialized");
+    
     // If found, return the connection ID and its data
     return { id: connectionId, data: connectionManager.get(connectionId)! };
   } else {
@@ -121,6 +143,8 @@ export const getDbObject = (req: TralseRequest): DatabaseObject => {
   // Deserialize the connection data from the request
   const { data } = deserializeConnection(req);
   // Return the database object
+  console.log("Inside getDbObject");
+  
   return data;
 };
 
@@ -134,10 +158,12 @@ export const updateDbObject = (
   req: TralseRequest,
   updateData: Partial<DatabaseObject>
 ): void => {
+  console.log("Inside updateDbObject");
   // Deserialize the connection data from the request
   const { id, data } = deserializeConnection(req);
   // Update the database object in the connectionManager
   connectionManager.set(id, { ...data, ...updateData });
+  console.log("updateDbObject updated");
 };
 
 /**
@@ -148,11 +174,16 @@ export const updateDbObject = (
  */
 export const dispatchDbObject = (req: TralseRequest): void => {
   // Deserialize the connection data from the request
+  console.log("Inside dispatchDbObject");
   const { id } = deserializeConnection(req);
   // Remove the database object from the connectionManager
   const connectionData = connectionManager.get(id);
   if (connectionData?.timeoutId) {
     clearTimeout(connectionData.timeoutId);
+    console.log("Timeout cleared.");
+    
   }
   connectionManager.delete(id);
+  console.log("Deleted in connectionManager");
+  
 };

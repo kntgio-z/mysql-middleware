@@ -9,6 +9,8 @@ export const manageDeadlocks = async (
   const executeQueryWithRetries = async (
     retryCount: number = 0
   ): Promise<any> => {
+    console.log("In deadlock");
+    
     try {
       return await queryFunction();
     } catch (error: any) {

@@ -26,6 +26,8 @@ export const executeDbQuery = async (
     const { connection } = getDbObject(req);
 
     try {
+      console.log("Inside query");
+      
       let queryResult;
       if (Array.isArray(sql)) {
         if (!Array.isArray(params) || sql.length !== params.length) {
@@ -40,6 +42,8 @@ export const executeDbQuery = async (
         const [rows] = await connection.execute(sql, params);
         queryResult = rows;
       }
+      console.log("Query executed");
+      
       return queryResult;
     } catch (error: any) {
       throw new DatabaseError(`Query execution failed: ${error.message}`);
