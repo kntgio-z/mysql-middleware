@@ -81,7 +81,7 @@ const initializeDatabase = async (
   const releaseConnection = async (): Promise<void> => {
     const { connection } = getDbObject(req);
     dispatchDbObject(req);
-    await connection.end();
+    connection.release();
   };
 
   /**

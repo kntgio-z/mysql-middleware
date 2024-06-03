@@ -1,4 +1,4 @@
-import { Connection } from "mysql2/promise";
+import { PoolConnection as Connection } from "mysql2/promise";
 import { Request, Response, NextFunction } from "express";
 import { SessionData } from "express-session";
 // TODO: Revise

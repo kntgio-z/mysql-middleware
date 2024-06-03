@@ -1,7 +1,7 @@
 import { DatabaseError } from "../errors/error";
 import { DatabaseObject } from "../types";
 import { TralseRequest } from "../types";
-import { Connection } from "mysql2/promise";
+import { PoolConnection as Connection } from "mysql2/promise";
 
 const TIMEOUT_WITHIN = 60000;
 
