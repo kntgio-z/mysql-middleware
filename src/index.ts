@@ -87,7 +87,11 @@ export const TralseMySQL = (
   dbName: string,
   enableTransactions: boolean = false
 ) => {
-  return async (req: TralseRequest, res: TralseResponse, next: TralseNext): Promise<void> => {
+  return async (
+    req: TralseRequest,
+    res: TralseResponse,
+    next: TralseNext
+  ): Promise<void> => {
     try {
       req.tralse_db_mysql = req.tralse_db_mysql || {};
       const dbInstance = await initializeDatabase(
@@ -100,13 +104,31 @@ export const TralseMySQL = (
 
       next();
     } catch (error: any) {
-       res.status(500).json({
+      res.status(500).json({
         status: 500,
         code: "DATABASE_INIT_ERROR",
         error: "Error initializing database.",
       });
     }
   };
+};
+
+/**
+ * Retrieves a MySQL database instance from the TralseRequest object.
+ *
+ * @param req - The TralseRequest object containing database instances.
+ * @param name - The name of the MySQL database instance to retrieve.
+ * @returns The MySQL database instance.
+ * @throws If the specified database instance is not found.
+ */
+export const getMysql = (
+  req: TralseRequest,
+  name: string
+): DatabaseInstance => {
+  if (!req.tralse_db_mysql[name])
+    throw new DatabaseError(`Cannot find a database named ${name}.`);
+
+  return req.tralse_db_mysql[name];
 };
 
 export * from "./types/index";
