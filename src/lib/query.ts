@@ -3,7 +3,7 @@ import { DatabaseError } from "../errors/error";
 import { getDbObject } from "./object";
 import { RowDataPacket } from "mysql2/promise";
 import { TralseRequest } from "../types";
-import { log } from "../util/log";
+import { log, LogState } from "@tralse/developer-logs";
 
 type QueryResult = RowDataPacket[];
 
@@ -27,7 +27,7 @@ export const executeDbQuery = async (
     const { connection } = getDbObject(req);
 
     try {
-      log.magenta("Inside query");
+      log.magenta(`Attempting query...`, "executeDbQuery", LogState.DEBUGMODE);
 
       let queryResult;
       if (Array.isArray(sql)) {
@@ -43,10 +43,11 @@ export const executeDbQuery = async (
         const [rows] = await connection.execute(sql, params);
         queryResult = rows;
       }
-      log.magenta("Query executed");
+      log.green("Success. Query executed", "executeDbQuery");
 
       return queryResult;
     } catch (error: any) {
+      log.red("Force exit.", "executeDbQuery");
       throw new DatabaseError(`Query execution failed: ${error.message}`);
     }
   });

@@ -3,6 +3,7 @@ import { TransactionError, DatabaseError } from "../errors/error";
 import { manageDeadlocks } from "./deadlock";
 import { TransactionMethods } from "../types";
 import { TralseRequest } from "../types";
+import { log, LogState } from "@tralse/developer-logs";
 
 /**
  * Initializes a transaction.
@@ -35,6 +36,12 @@ export const initializeDbTransaction = async (
       generateReferenceNo: (() => string) | null = null
     ): Promise<any | any[]> => {
       try {
+        log.magenta(
+          `Initializing transaction...`,
+          "initTransaction",
+          LogState.DEBUGMODE
+        );
+
         const { connection } = getDbObject(req);
 
         await connection.beginTransaction();
@@ -61,9 +68,16 @@ export const initializeDbTransaction = async (
         };
 
         updateDbObject(req, transactionData);
+
+        log.green(`Done. Transaction success.`, "initTransaction");
         return queryResult;
       } catch (error: any) {
+        log.red(`Force exit. Rollbacking transaction...`, "initTransaction");
         await rollbackTransaction();
+        log.red(
+          `Force exit. Transaction rollback done...`,
+          "initTransaction"
+        );
         throw new TransactionError(
           `Failed to initialize transaction: ${error.message}`
         );
@@ -79,10 +93,25 @@ export const initializeDbTransaction = async (
     const commitTransaction = async (): Promise<void> => {
       const { connection, referenceNo } = getDbObject(req);
 
+      log.magenta(
+        `Committing transaction...`,
+        "commitTransaction",
+        LogState.DEBUGMODE
+      );
+
       try {
         await connection.commit();
+        log.green(
+          `Done. Commit success.`,
+          "commitTransaction"
+        );
       } catch (error: any) {
+        log.red(`Force exit. Rollbacking transaction...`, "initTransaction");
         await rollbackTransaction();
+        log.red(
+          `Force exit. Transaction rollback done...`,
+          "initTransaction"
+        );
         throw new TransactionError(
           `Failed to commit transaction: ${error.message}`
         );
@@ -99,8 +128,21 @@ export const initializeDbTransaction = async (
       const { connection, referenceNo } = getDbObject(req);
 
       try {
+        log.magenta(
+          `Rollbacking transaction...`,
+          "rollbackTransaction",
+          LogState.DEBUGMODE
+        );
         await connection.rollback();
+        log.green(
+          `Done. Transaction rollback success.`,
+          "rollbackTransaction"
+        );
       } catch (error: any) {
+        log.red(
+          `Force exit.`,
+          "rollbackTransaction"
+        );
         throw new TransactionError(
           `Failed to rollback transaction: ${error.message}`
         );
@@ -114,10 +156,25 @@ export const initializeDbTransaction = async (
      */
     const retrieveRecords = (): { connection: string; [key: string]: any } => {
       let dbObject;
+
+      log.magenta(
+        `Retrieving records...`,
+        "retrieveRecords",
+        LogState.DEBUGMODE
+      );
+
       try {
         dbObject = getDbObject(req);
+        log.green(
+          `Done. Connection is initialized`,
+          "retrieveRecords"
+        );
         return { ...dbObject, connection: "initialized" };
       } catch (error: any) {
+        log.green(
+          `Done. Connection is not initialized`,
+          "retrieveRecords"
+        );
         return { connection: "not initialized", error: error.message };
       }
     };

@@ -1,16 +1,22 @@
 import { DatabaseError } from "../errors/error";
 import { QueryFunction } from "../types";
-import { log } from "../util/log";
+import { log, LogState } from "@tralse/developer-logs";
+
 export const manageDeadlocks = async (
   maxRetries: number,
   queryFunction: QueryFunction,
   maxBackoffTime: number = 8000
 ): Promise<any> => {
+  log.magenta("Start", "manageDeadlocks", LogState.DEBUGMODE);
+
   const executeQueryWithRetries = async (
     retryCount: number = 0
   ): Promise<any> => {
-    log.magenta("In deadlock");
-
+    log.magenta(
+      `Retry number ${retryCount}`,
+      "executeQueryWithRetries",
+      LogState.DEBUGMODE
+    );
     try {
       return await queryFunction();
     } catch (error: any) {
@@ -27,13 +33,17 @@ export const manageDeadlocks = async (
         await new Promise((resolve) => setTimeout(resolve, backoffTime));
         return executeQueryWithRetries(retryCount + 1);
       } else {
-        log.magenta(error);
+        log.red(
+          `Force exit.`,
+          "executeQueryWithRetries",
+          LogState.DEBUGMODE
+        );
         throw new DatabaseError(
           `Database error after ${maxRetries} retries: ${error.message}`
         );
       }
     }
   };
-
+  log.magenta(`About to start...`, "executeQueryWithRetries", LogState.DEBUGMODE);
   return await executeQueryWithRetries();
 };

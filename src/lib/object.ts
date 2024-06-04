@@ -2,7 +2,7 @@ import { DatabaseError } from "../errors/error";
 import { DatabaseObject } from "../types";
 import { TralseRequest } from "../types";
 import { PoolConnection as Connection } from "mysql2/promise";
-import { log } from "../util/log";
+import { log, LogState } from "@tralse/developer-logs";
 
 const TIMEOUT_WITHIN = 60000;
 
@@ -16,12 +16,26 @@ const connectionManager = new Map<string, DatabaseObject>();
  * @throws DatabaseError - If the session object is not yet initialized.
  */
 const checkSessionObject = (req: TralseRequest): void => {
+  log.magenta(
+    `Checking session object...`,
+    "checkSessionObject",
+    LogState.DEBUGMODE
+  );
   log.magenta("In checkSessionObject, checking session");
-  if (!req.session)
+  if (!req.session){
+    log.red(
+      `Force exit.`,
+      "checkSessionObject",
+      LogState.DEBUGMODE
+    );
     throw new DatabaseError(
       "Session object is not yet initialized. Make sure that you have configured your session."
+    );}
+    log.green(
+      `Done. Session object exists.`,
+      "checkSessionObject",
+      LogState.DEBUGMODE
     );
-  log.magenta("Session exists");
 };
 
 /**
