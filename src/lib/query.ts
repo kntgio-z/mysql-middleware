@@ -53,7 +53,9 @@ export const executeDbQuery = async (
       } else throw new Error("Cannot get connection.");
     } catch (error: any) {
       log.red("Force exit.", "executeDbQuery");
-      throw new DatabaseError(`Query execution failed: ${error.message}`);
+      throw new DatabaseError(
+        `Query execution failed: ${(error.message, error.code)}`
+      );
     }
   });
 };

@@ -58,7 +58,7 @@ const setConnectionId = (req: TralseRequest, id: string): void => {
     );
   } catch (error: any) {
     log.red(`Force exit.`, "setConnectionId", LogState.DEBUGMODE);
-    throw new DatabaseError(error.message);
+    throw new DatabaseError(error.message, error.code);
   }
 };
 
@@ -77,13 +77,16 @@ const getConnectionId = (req: TralseRequest): string => {
       !req.session.tralse_db_mysql ||
       !req.session.tralse_db_mysql.connectionId
     ) {
-      throw new DatabaseError("Connection is not yet initialized.");
+      throw new DatabaseError(
+        "Connection is not yet initialized.",
+        "CONN_NOT_INIT"
+      );
     }
     log.green("Connection fetched", "getConnectionId", LogState.DEBUGMODE);
     return req.session.tralse_db_mysql.connectionId;
   } catch (error: any) {
     log.red(`Force exit.`, "getConnectionId", LogState.DEBUGMODE);
-    throw new DatabaseError(error.message);
+    throw new DatabaseError(error.message, error.code);
   }
 };
 
@@ -135,7 +138,7 @@ export const serializeConnection = (
       LogState.DEBUGMODE
     );
   } catch (error: any) {
-    throw new DatabaseError(error.message);
+    throw new DatabaseError(error.message, error.code);
   }
 };
 
@@ -170,7 +173,7 @@ export const deserializeConnection = (
       throw new DatabaseError("Connection key not found.");
     }
   } catch (error: any) {
-    throw new DatabaseError(error.message);
+    throw new DatabaseError(error.message, error.code);
   }
 };
 
@@ -189,7 +192,7 @@ export const getDbObject = (req: TralseRequest): DatabaseObject | undefined => {
     const { data } = deserializeConnection(req);
     return data;
   } catch (error: any) {
-    throw new DatabaseError(error.message);
+    throw new DatabaseError(error.message, error.code);
   }
 };
 
@@ -229,7 +232,7 @@ export const updateDbObject = (
       throw new DatabaseError("Invalid connection data.");
     }
   } catch (error: any) {
-    throw new DatabaseError(error.message);
+    throw new DatabaseError(error.message, error.code);
   }
 };
 
@@ -272,6 +275,6 @@ export const dispatchDbObject = (req: TralseRequest): void => {
       throw new DatabaseError("Invalid connection ID.");
     }
   } catch (error: any) {
-    throw new DatabaseError(error.message);
+    throw new DatabaseError(error.message, error.code);
   }
 };

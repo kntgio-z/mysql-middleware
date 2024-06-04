@@ -84,7 +84,7 @@ export const initializeDbTransaction = async (
         await rollbackTransaction();
         log.red(`Force exit. Transaction rollback done...`, "initTransaction");
         throw new TransactionError(
-          `Failed to initialize transaction: ${error.message}`
+          `Failed to initialize transaction: ${(error.message, error.code)}`
         );
       }
     };
@@ -112,11 +112,18 @@ export const initializeDbTransaction = async (
         log.green(`Done. Commit success.`, "commitTransaction");
       } catch (error: any) {
         log.red(`Force exit. Rollbacking transaction...`, "initTransaction");
-        await rollbackTransaction();
-        log.red(`Force exit. Transaction rollback done...`, "initTransaction");
-        throw new TransactionError(
-          `Failed to commit transaction: ${error.message}`
-        );
+        if (error.code !== "CONN_NOT_INIT") {
+          await rollbackTransaction();
+          log.red(
+            `Force exit. Transaction rollback done...`,
+            "initTransaction"
+          );
+          throw new TransactionError(
+            `Failed to commit transaction: ${(error.message, error.code)}`
+          );
+        } else {
+          throw new TransactionError(error.message, error.code);
+        }
       }
     };
 
@@ -145,7 +152,8 @@ export const initializeDbTransaction = async (
       } catch (error: any) {
         log.red(`Force exit.`, "rollbackTransaction");
         throw new TransactionError(
-          `Failed to rollback transaction: ${error.message}`
+          `Failed to rollback transaction: ${(error.message, error.code)}`,
+          error.code
         );
       }
     };

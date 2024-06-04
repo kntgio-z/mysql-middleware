@@ -33,17 +33,19 @@ export const manageDeadlocks = async (
         await new Promise((resolve) => setTimeout(resolve, backoffTime));
         return executeQueryWithRetries(retryCount + 1);
       } else {
-        log.red(
-          `Force exit.`,
-          "executeQueryWithRetries",
-          LogState.DEBUGMODE
-        );
+        log.red(`Force exit.`, "executeQueryWithRetries", LogState.DEBUGMODE);
         throw new DatabaseError(
-          `Database error after ${maxRetries} retries: ${error.message}`
+          `Database error after ${maxRetries} retries: ${
+            (error.message, error.code)
+          }`
         );
       }
     }
   };
-  log.magenta(`About to start...`, "executeQueryWithRetries", LogState.DEBUGMODE);
+  log.magenta(
+    `About to start...`,
+    "executeQueryWithRetries",
+    LogState.DEBUGMODE
+  );
   return await executeQueryWithRetries();
 };

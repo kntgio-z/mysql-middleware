@@ -86,7 +86,7 @@ const initializeDatabase = async (
       dispatchDbObject(req);
       dbObject.connection.release();
     } catch (error: any) {
-      throw new DatabaseError(error.message);
+      throw new DatabaseError(error.message, error.code);
     }
   };
 
@@ -102,7 +102,9 @@ const initializeDatabase = async (
         await pool.end();
       } catch (error: any) {
         throw new DatabaseError(
-          `Failed to terminate database connection pool: ${error.message}`
+          `Failed to terminate database connection pool: ${
+            (error.message, error.code)
+          }`
         );
       }
     }
