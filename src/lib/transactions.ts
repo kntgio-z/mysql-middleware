@@ -80,9 +80,17 @@ export const initializeDbTransaction = async (
         log.green(`Done. Transaction success.`, "initTransaction");
         return queryResult;
       } catch (error: any) {
-        log.red(`Force exit. Rollbacking transaction...`, "initTransaction");
+        log.red(
+          `Force exit. Rollbacking transaction...`,
+          "initTransaction",
+          LogState.DEBUGMODE
+        );
         await rollbackTransaction();
-        log.red(`Force exit. Transaction rollback done...`, "initTransaction");
+        log.red(
+          `Force exit. Transaction rollback done...`,
+          "initTransaction",
+          LogState.DEBUGMODE
+        );
         throw new TransactionError(
           `Failed to initialize transaction: ${(error.message, error.code)}`
         );

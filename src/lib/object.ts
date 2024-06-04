@@ -185,7 +185,7 @@ export const deserializeConnection = (
  * @throws DatabaseError - If there is an issue deserializing the connection.
  */
 export const getDbObject = (req: TralseRequest): DatabaseObject | undefined => {
-  log.magenta("Inside getDbObject", "getDbObject", LogState.DEBUGMODE);
+  log.magenta("Getting DB object...", "getDbObject", LogState.DEBUGMODE);
 
   try {
     // Deserialize the connection data from the request
