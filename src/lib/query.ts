@@ -44,7 +44,7 @@ export const executeDbQuery = async (
             queryResult.push(rows);
           }
         } else {
-          const [rows] = await connection.execute(sql, params);
+          const [rows] = await result.connection.execute(sql, params);
           queryResult = rows;
         }
         log.green("Success. Query executed", "executeDbQuery");
