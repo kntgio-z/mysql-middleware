@@ -42,7 +42,15 @@ export const initializeDbTransaction = async (
           LogState.DEBUGMODE
         );
 
-        const { connection } = getDbObject(req);
+        const dbObject = getDbObject(req);
+
+        if (!dbObject || !dbObject.connection) {
+          throw new DatabaseError(
+            "Database object or connection is undefined."
+          );
+        }
+
+        const { connection } = dbObject;
 
         await connection.beginTransaction();
 
@@ -74,10 +82,7 @@ export const initializeDbTransaction = async (
       } catch (error: any) {
         log.red(`Force exit. Rollbacking transaction...`, "initTransaction");
         await rollbackTransaction();
-        log.red(
-          `Force exit. Transaction rollback done...`,
-          "initTransaction"
-        );
+        log.red(`Force exit. Transaction rollback done...`, "initTransaction");
         throw new TransactionError(
           `Failed to initialize transaction: ${error.message}`
         );
@@ -91,27 +96,24 @@ export const initializeDbTransaction = async (
      * @throws TransactionError - If the transaction commit fails.
      */
     const commitTransaction = async (): Promise<void> => {
-      const { connection, referenceNo } = getDbObject(req);
-
-      log.magenta(
-        `Committing transaction...`,
-        "commitTransaction",
-        LogState.DEBUGMODE
-      );
-
       try {
-        await connection.commit();
-        log.green(
-          `Done. Commit success.`,
-          "commitTransaction"
+        const dbObject = getDbObject(req);
+        if (!dbObject || !dbObject.connection || !dbObject.referenceNo) {
+          throw new DatabaseError(
+            "Database object or connection is undefined."
+          );
+        }
+        log.magenta(
+          `Committing transaction...`,
+          "commitTransaction",
+          LogState.DEBUGMODE
         );
+        await dbObject.connection.commit();
+        log.green(`Done. Commit success.`, "commitTransaction");
       } catch (error: any) {
         log.red(`Force exit. Rollbacking transaction...`, "initTransaction");
         await rollbackTransaction();
-        log.red(
-          `Force exit. Transaction rollback done...`,
-          "initTransaction"
-        );
+        log.red(`Force exit. Transaction rollback done...`, "initTransaction");
         throw new TransactionError(
           `Failed to commit transaction: ${error.message}`
         );
@@ -125,24 +127,23 @@ export const initializeDbTransaction = async (
      * @throws TransactionError - If the transaction rollback fails.
      */
     const rollbackTransaction = async (): Promise<void> => {
-      const { connection, referenceNo } = getDbObject(req);
-
       try {
+        const dbObject = getDbObject(req);
+
+        if (!dbObject || !dbObject.connection || !dbObject.referenceNo) {
+          throw new DatabaseError(
+            "Database object or connection is undefined."
+          );
+        }
         log.magenta(
           `Rollbacking transaction...`,
           "rollbackTransaction",
           LogState.DEBUGMODE
         );
-        await connection.rollback();
-        log.green(
-          `Done. Transaction rollback success.`,
-          "rollbackTransaction"
-        );
+        await dbObject.connection.rollback();
+        log.green(`Done. Transaction rollback success.`, "rollbackTransaction");
       } catch (error: any) {
-        log.red(
-          `Force exit.`,
-          "rollbackTransaction"
-        );
+        log.red(`Force exit.`, "rollbackTransaction");
         throw new TransactionError(
           `Failed to rollback transaction: ${error.message}`
         );
@@ -165,16 +166,10 @@ export const initializeDbTransaction = async (
 
       try {
         dbObject = getDbObject(req);
-        log.green(
-          `Done. Connection is initialized`,
-          "retrieveRecords"
-        );
+        log.green(`Done. Connection is initialized`, "retrieveRecords");
         return { ...dbObject, connection: "initialized" };
       } catch (error: any) {
-        log.green(
-          `Done. Connection is not initialized`,
-          "retrieveRecords"
-        );
+        log.green(`Done. Connection is not initialized`, "retrieveRecords");
         return { connection: "not initialized", error: error.message };
       }
     };

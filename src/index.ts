@@ -78,9 +78,16 @@ const initializeDatabase = async (
    * @throws DatabaseError - If there is an error releasing the connection.
    */
   const releaseConnection = async (): Promise<void> => {
-    const { connection } = getDbObject(req);
-    dispatchDbObject(req);
-    connection.release();
+    try {
+      const dbObject = getDbObject(req);
+
+      if (!dbObject || !dbObject.connection)
+        throw new Error("Connection is undefined.");
+      dispatchDbObject(req);
+      dbObject.connection.release();
+    } catch (error: any) {
+      throw new DatabaseError(error.message);
+    }
   };
 
   /**

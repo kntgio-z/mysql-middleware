@@ -21,21 +21,18 @@ const checkSessionObject = (req: TralseRequest): void => {
     "checkSessionObject",
     LogState.DEBUGMODE
   );
-  log.magenta("In checkSessionObject, checking session");
-  if (!req.session){
-    log.red(
-      `Force exit.`,
-      "checkSessionObject",
-      LogState.DEBUGMODE
-    );
+  log.magenta("In checkSessionObject, checking session", LogState.DEBUGMODE);
+  if (!req.session) {
+    log.red(`Force exit.`, "checkSessionObject", LogState.DEBUGMODE);
     throw new DatabaseError(
       "Session object is not yet initialized. Make sure that you have configured your session."
-    );}
-    log.green(
-      `Done. Session object exists.`,
-      "checkSessionObject",
-      LogState.DEBUGMODE
     );
+  }
+  log.green(
+    `Done. Session object exists.`,
+    "checkSessionObject",
+    LogState.DEBUGMODE
+  );
 };
 
 /**
@@ -47,15 +44,20 @@ const checkSessionObject = (req: TralseRequest): void => {
  */
 const setConnectionId = (req: TralseRequest, id: string): void => {
   try {
-    log.magenta("Setting connection id");
+    log.magenta("Setting connection id", "setConnectionId", LogState.DEBUGMODE);
 
     checkSessionObject(req);
     req.session.tralse_db_mysql = {
       connectionId: id,
     };
 
-    log.magenta("Connection set. tralse_db_mysql initialized in session.");
+    log.green(
+      "Connection set. tralse_db_mysql initialized in session.",
+      "setConnectionId",
+      LogState.DEBUGMODE
+    );
   } catch (error: any) {
+    log.red(`Force exit.`, "setConnectionId", LogState.DEBUGMODE);
     throw new DatabaseError(error.message);
   }
 };
@@ -69,7 +71,7 @@ const setConnectionId = (req: TralseRequest, id: string): void => {
  */
 const getConnectionId = (req: TralseRequest): string => {
   try {
-    log.magenta("Getting connection id");
+    log.magenta("Getting connection id", "getConnectionId", LogState.DEBUGMODE);
 
     if (
       !req.session.tralse_db_mysql ||
@@ -77,9 +79,10 @@ const getConnectionId = (req: TralseRequest): string => {
     ) {
       throw new DatabaseError("Connection is not yet initialized.");
     }
-    log.magenta("Connection fetched");
+    log.green("Connection fetched", "getConnectionId", LogState.DEBUGMODE);
     return req.session.tralse_db_mysql.connectionId;
   } catch (error: any) {
+    log.red(`Force exit.`, "getConnectionId", LogState.DEBUGMODE);
     throw new DatabaseError(error.message);
   }
 };
@@ -94,27 +97,46 @@ export const serializeConnection = (
   req: TralseRequest,
   connection: Connection
 ): void => {
-  log.magenta("Serializing connection");
+  try {
+    log.magenta(
+      "Starting serialization...",
+      "serializeConnection",
+      LogState.DEBUGMODE
+    );
+    // Obtain the connection ID from the threadId of the connection
+    const connectionId = connection.threadId.toString();
+    // Set the connection ID in the request session
+    setConnectionId(req, connectionId);
+    // Store the connection in the connectionManager with its ID as key
+    const connectionData: DatabaseObject = {
+      connection,
+    };
+    connectionManager.set(connectionId, connectionData);
+    log.brightGreen(
+      "Set into connectionManager, setting timeout id",
+      "connectionManager",
+      LogState.DEBUGMODE
+    );
 
-  // Obtain the connection ID from the threadId of the connection
-  const connectionId = connection.threadId.toString();
-  // Set the connection ID in the request session
-  setConnectionId(req, connectionId);
-  // Store the connection in the connectionManager with its ID as key
-  const connectionData: DatabaseObject = {
-    connection,
-  };
-  connectionManager.set(connectionId, connectionData);
-  log.magenta("Set into connectionManager, setting timeout id");
-
-  // Set up timeout to delete connection if not settled within 1 minute
-  const timeoutId = setTimeout(() => {
-    connectionManager.delete(connectionId);
-    clearTimeout(timeoutId);
-    log.magenta("Stale connection deleted.");
-  }, TIMEOUT_WITHIN);
-  connectionData.timeoutId = timeoutId.toString();
-  log.magenta("timeout id set.");
+    // Set up timeout to delete connection if not settled within 1 minute
+    const timeoutId = setTimeout(() => {
+      connectionManager.delete(connectionId);
+      clearTimeout(timeoutId);
+      log.green(
+        "Done. Stale connection deleted.",
+        "connectionManager",
+        LogState.DEBUGMODE
+      );
+    }, TIMEOUT_WITHIN);
+    connectionData.timeoutId = timeoutId.toString();
+    log.green(
+      "Done. timeout id set.",
+      "serializeConnection",
+      LogState.DEBUGMODE
+    );
+  } catch (error: any) {
+    throw new DatabaseError(error.message);
+  }
 };
 
 /**
@@ -126,20 +148,29 @@ export const serializeConnection = (
  */
 export const deserializeConnection = (
   req: TralseRequest
-): { id: string; data: DatabaseObject } => {
-  log.magenta("Deserializing connection");
+): { id?: string; data?: DatabaseObject } => {
+  try {
+    log.magenta(
+      "Deserializing connection",
+      "deserializeConnection",
+      LogState.DEBUGMODE
+    );
 
-  // Obtain the connection ID from the request session
-  const connectionId = getConnectionId(req);
-  // Check if the connection ID exists in the connectionManager
-  if (connectionManager.has(connectionId)) {
-    log.magenta("Serialized");
+    // Obtain the connection ID from the request session
+    const connectionId = getConnectionId(req);
 
-    // If found, return the connection ID and its data
-    return { id: connectionId, data: connectionManager.get(connectionId)! };
-  } else {
-    // If not found, throw an error
-    throw new DatabaseError("Connection key not found.");
+    // Check if the connection ID exists in the connectionManager
+    if (connectionManager.has(connectionId)) {
+      log.magenta("Serialized", "deserializeConnection", LogState.DEBUGMODE);
+
+      // If found, return the connection ID and its data
+      return { id: connectionId, data: connectionManager.get(connectionId)! };
+    } else {
+      // If not found, throw an error
+      throw new DatabaseError("Connection key not found.");
+    }
+  } catch (error: any) {
+    throw new DatabaseError(error.message);
   }
 };
 
@@ -148,14 +179,18 @@ export const deserializeConnection = (
  *
  * @param req - The request object.
  * @returns The retrieved database object.
+ * @throws DatabaseError - If there is an issue deserializing the connection.
  */
-export const getDbObject = (req: TralseRequest): DatabaseObject => {
-  // Deserialize the connection data from the request
-  const { data } = deserializeConnection(req);
-  // Return the database object
-  log.magenta("Inside getDbObject");
+export const getDbObject = (req: TralseRequest): DatabaseObject | undefined => {
+  log.magenta("Inside getDbObject", "getDbObject", LogState.DEBUGMODE);
 
-  return data;
+  try {
+    // Deserialize the connection data from the request
+    const { data } = deserializeConnection(req);
+    return data;
+  } catch (error: any) {
+    throw new DatabaseError(error.message);
+  }
 };
 
 /**
@@ -164,16 +199,38 @@ export const getDbObject = (req: TralseRequest): DatabaseObject => {
  * @param req - The request object.
  * @param updateData - The new properties to update.
  */
+/**
+ * Updates the database object in the connection manager.
+ *
+ * @param req - The request object.
+ * @param updateData - The data to update the database object with.
+ * @throws DatabaseError - If there is an issue updating the database object.
+ */
 export const updateDbObject = (
   req: TralseRequest,
   updateData: Partial<DatabaseObject>
 ): void => {
-  log.magenta("Inside updateDbObject");
-  // Deserialize the connection data from the request
-  const { id, data } = deserializeConnection(req);
-  // Update the database object in the connectionManager
-  connectionManager.set(id, { ...data, ...updateData });
-  log.magenta("updateDbObject updated");
+  try {
+    log.magenta("Inside updateDbObject", "updateDbObject", LogState.DEBUGMODE);
+
+    // Deserialize the connection data from the request
+    const { id, data } = deserializeConnection(req);
+
+    if (id && data) {
+      // Update the database object in the connectionManager
+      connectionManager.set(id, { ...data, ...updateData });
+
+      log.magenta(
+        "updateDbObject updated",
+        "updateDbObject",
+        LogState.DEBUGMODE
+      );
+    } else {
+      throw new DatabaseError("Invalid connection data.");
+    }
+  } catch (error: any) {
+    throw new DatabaseError(error.message);
+  }
 };
 
 /**
@@ -183,15 +240,38 @@ export const updateDbObject = (
  * @throws DatabaseError - If the database object is not found.
  */
 export const dispatchDbObject = (req: TralseRequest): void => {
-  // Deserialize the connection data from the request
-  log.magenta("Inside dispatchDbObject");
-  const { id } = deserializeConnection(req);
-  // Remove the database object from the connectionManager
-  const connectionData = connectionManager.get(id);
-  if (connectionData?.timeoutId) {
-    clearTimeout(connectionData.timeoutId);
-    log.magenta("Timeout cleared.");
+  try {
+    // Log the start of the function
+    log.magenta(
+      "Inside dispatchDbObject",
+      "dispatchDbObject",
+      LogState.DEBUGMODE
+    );
+
+    // Deserialize the connection data from the request
+    const { id } = deserializeConnection(req);
+
+    if (id) {
+      // Retrieve the connection data
+      const connectionData = connectionManager.get(id);
+
+      // If a timeout ID exists, clear the timeout
+      if (connectionData?.timeoutId) {
+        clearTimeout(connectionData.timeoutId);
+        log.magenta("Timeout cleared.", "dispatchDbObject", LogState.DEBUGMODE);
+      }
+
+      // Delete the connection data from the connectionManager
+      connectionManager.delete(id);
+      log.magenta(
+        "Deleted in connectionManager",
+        "dispatchDbObject",
+        LogState.DEBUGMODE
+      );
+    } else {
+      throw new DatabaseError("Invalid connection ID.");
+    }
+  } catch (error: any) {
+    throw new DatabaseError(error.message);
   }
-  connectionManager.delete(id);
-  log.magenta("Deleted in connectionManager");
 };

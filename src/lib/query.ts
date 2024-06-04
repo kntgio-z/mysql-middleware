@@ -24,28 +24,33 @@ export const executeDbQuery = async (
   params: any[] | any[][] = []
 ): Promise<QueryResult | QueryResult[]> => {
   return await manageDeadlocks(3, async () => {
-    const { connection } = getDbObject(req);
-
     try {
-      log.magenta(`Attempting query...`, "executeDbQuery", LogState.DEBUGMODE);
+      const result = getDbObject(req);
+      if (result) {
+        log.magenta(
+          `Attempting query...`,
+          "executeDbQuery",
+          LogState.DEBUGMODE
+        );
 
-      let queryResult;
-      if (Array.isArray(sql)) {
-        if (!Array.isArray(params) || sql.length !== params.length) {
-          throw new DatabaseError("Mismatched SQL queries and parameters.");
+        let queryResult;
+        if (Array.isArray(sql)) {
+          if (!Array.isArray(params) || sql.length !== params.length) {
+            throw new DatabaseError("Mismatched SQL queries and parameters.");
+          }
+          queryResult = [];
+          for (let i = 0; i < sql.length; i++) {
+            const [rows] = await result.connection.execute(sql[i], params[i]);
+            queryResult.push(rows);
+          }
+        } else {
+          const [rows] = await connection.execute(sql, params);
+          queryResult = rows;
         }
-        queryResult = [];
-        for (let i = 0; i < sql.length; i++) {
-          const [rows] = await connection.execute(sql[i], params[i]);
-          queryResult.push(rows);
-        }
-      } else {
-        const [rows] = await connection.execute(sql, params);
-        queryResult = rows;
-      }
-      log.green("Success. Query executed", "executeDbQuery");
+        log.green("Success. Query executed", "executeDbQuery");
 
-      return queryResult;
+        return queryResult;
+      } else throw new Error("Cannot get connection.");
     } catch (error: any) {
       log.red("Force exit.", "executeDbQuery");
       throw new DatabaseError(`Query execution failed: ${error.message}`);
