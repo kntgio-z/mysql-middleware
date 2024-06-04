@@ -4,6 +4,7 @@ import { manageDeadlocks } from "./deadlock";
 import { TransactionMethods } from "../types";
 import { TralseRequest } from "../types";
 import { log, LogState } from "@tralse/developer-logs";
+import { executeDbQuery2 } from "./query";
 
 /**
  * Initializes a transaction.
@@ -54,20 +55,13 @@ export const initializeDbTransaction = async (
 
         await connection.beginTransaction();
 
-        let queryResult;
-        if (Array.isArray(sql)) {
-          if (!Array.isArray(params) || sql.length !== params.length) {
-            throw new DatabaseError("Mismatched SQL queries and parameters.");
-          }
-          queryResult = [];
-          for (let i = 0; i < sql.length; i++) {
-            const [rows] = await connection.execute(sql[i], params[i]);
-            queryResult.push(rows);
-          }
-        } else {
-          const [rows] = await connection.execute(sql, params);
-          queryResult = rows;
-        }
+        let queryResult = await executeDbQuery2(
+          connection,
+          dbName,
+          sql,
+          params
+        );
+
         const referenceNo = generateReferenceNo
           ? generateReferenceNo()
           : "refNo";
@@ -91,9 +85,11 @@ export const initializeDbTransaction = async (
           "initTransaction",
           LogState.DEBUGMODE
         );
-        throw new TransactionError(
-          `Failed to initialize transaction: ${(error.message, error.code)}`
-        );
+        if (error instanceof DatabaseError || error instanceof TransactionError)
+          throw new TransactionError(
+            `Failed to initialize transaction: ${(error.message, error.code)}`
+          );
+        else throw error;
       }
     };
 

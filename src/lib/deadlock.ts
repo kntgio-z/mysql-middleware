@@ -34,11 +34,7 @@ export const manageDeadlocks = async (
         return executeQueryWithRetries(retryCount + 1);
       } else {
         log.red(`Force exit.`, "executeQueryWithRetries", LogState.DEBUGMODE);
-        throw new DatabaseError(
-          `Database error after ${maxRetries} retries: ${
-            (error.message, error.code)
-          }`
-        );
+        throw error;
       }
     }
   };
