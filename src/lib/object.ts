@@ -169,8 +169,10 @@ export const deserializeConnection = (
       // If found, return the connection ID and its data
       return { id: connectionId, data: connectionManager.get(connectionId)! };
     } else {
-      // If not found, throw an error
-      throw new DatabaseError("Connection key not found.");
+      throw new DatabaseError(
+        "Connection is not yet initialized. Connection key not found.",
+        "CONN_NOT_INIT"
+      );
     }
   } catch (error: any) {
     throw new DatabaseError(error.message, error.code);
