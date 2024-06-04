@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [0.4.0](https://github.com/kntgio-z/mysql-middleware/compare/v0.3.0...v0.4.0) (2024-06-04)
+
+
+### Bug Fixes
+
+* **connection:** Fix bug where connection not reference to result object ([d51d11a](https://github.com/kntgio-z/mysql-middleware/commit/d51d11a10887a1532ece2c444d6d7478f930cd08))
+
 ## [0.3.0](https://github.com/kntgio-z/mysql-middleware/compare/v0.2.0...v0.3.0) (2024-06-04)
 
 ## [0.2.0](https://github.com/kntgio-z/mysql-middleware/compare/v0.1.0...v0.2.0) (2024-06-04)
