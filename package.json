@@ -8,7 +8,7 @@
   "scripts": {
     "build": "tsup",
     "patch": "npm version patch",
-    "publish": "tsup && npm publish --access=public && exit",
+    "pub": "tsup && npm publish --access=public && exit",
     "release": "standard-version",
     "release:minor": "standard-version --release-as minor",
     "release:major": "standard-version --release-as major"
