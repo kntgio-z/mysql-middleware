@@ -205,12 +205,15 @@ export const executeDbQuery: {
     try {
       log.magenta(`Attempting query...`, "executeDbQuery", LogState.DEBUGMODE);
 
+      // Type Guard for Connection
+      const isConnection = (obj: any): obj is Connection => "execute" in obj;
+
       let connection: Connection;
-      if ("execute" in arg1) {
-        connection = arg1 as Connection;
+      if (isConnection(arg1)) {
+        connection = arg1;
       } else {
         const result = getDbObject(arg1 as TralseRequest);
-        if (!result) {
+        if (!result || !isConnection(result.connection)) {
           throw new Error("Cannot get connection.");
         }
         connection = result.connection;
@@ -222,13 +225,16 @@ export const executeDbQuery: {
           throw new DatabaseError("Mismatched SQL queries and parameters.");
         }
         queryResult = [];
-        if (options && options.parallel) {
+        if (options?.parallel) {
           // Execute all queries in parallel
-          const promises = sql.map((query, index) => {
-            return connection.execute(query, params[index]);
-          });
+          const promises = [];
+          for (let i = 0; i < sql.length; i++) {
+            promises.push(connection.execute(sql[i], params[i]));
+          }
           const resultsArray = await Promise.all(promises);
-          queryResult = resultsArray.map(([rows]) => rows);
+          for (let i = 0; i < resultsArray.length; i++) {
+            queryResult.push(resultsArray[i][0]);
+          }
         } else {
           // Executes queries individually
           for (let i = 0; i < sql.length; i++) {
