@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [2.0.0](https://github.com/kntgio-z/mysql-middleware/compare/v1.0.0...v2.0.0) (2024-06-05)
+
+
+### Features
+
+* **query:** Add options object params. ([a0eb2c6](https://github.com/kntgio-z/mysql-middleware/commit/a0eb2c6f04c2839a7552383839bf2e0060bb2723))
+
 ## [1.0.0](https://github.com/kntgio-z/mysql-middleware/compare/v0.6.1...v1.0.0) (2024-06-05)
 
 ### [0.6.1](https://github.com/kntgio-z/mysql-middleware/compare/v0.6.0...v0.6.1) (2024-06-05)
