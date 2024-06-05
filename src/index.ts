@@ -127,7 +127,7 @@ const initializeDatabase = async (
  *
  * @param pool - The database connection pool.
  * @param dbName - The name of the database.
- * @param enableTransactions - Whether to enable transaction support.
+ * @param enableTransactions - Whether to enable transaction support. Default value is false.
  * @returns The middleware function.
  */
 export const TralseMySQL = (
