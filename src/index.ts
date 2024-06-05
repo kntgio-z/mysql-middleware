@@ -52,11 +52,16 @@ const initializeDatabase = async (
    *
    * @param sql - The SQL query string to execute.
    * @param params - The parameters for the SQL query.
+   * @param options - Optional settings for configuring query execution behavior.
    * @returns A promise that resolves with the query result.
    * @throws DatabaseError - If there is an error executing the query.
    */
-  const query = async (sql: string, params: any[] = []): Promise<any> => {
-    return await executeDbQuery(req, dbName, sql, params);
+  const query = async (
+    sql: string,
+    params: any[] = [],
+    options?: ExecuteDbQueryOptions
+  ): Promise<any> => {
+    return await executeDbQuery(req, dbName, sql, params, options);
   };
 
   /**
@@ -175,6 +180,75 @@ export const getMysql = (
   return req.tralse_db_mysql[name];
 };
 
+/**
+ * Executes a database query with deadlock management.
+ *
+ * @remarks
+ * This function allows executing database queries with deadlock management. It supports both individual and parallel asynchronous execution.
+ *
+ * @param conn - The MySQL connection.
+ * @param dbName - The name of the database connection.
+ * @param sql - The SQL query or queries to execute.
+ * @param params - The parameters for the SQL query or queries.
+ * @param options - Optional settings for configuring query execution behavior.
+ * @returns The result of the query or queries.
+ * @throws DatabaseError - If query execution fails.
+ *
+ * @example
+ * ```javascript
+ * import { executeDbQuery } from "@tralse/mysql-middleware";
+ *
+ * const pool = mysql.createPool({
+ *    // Database connection details
+ *    host: "host",
+ *    user: "username",
+ *    password: "password",
+ *    database: "db",
+ *    connectionLimit: 10,
+ *    port: 3306,
+ *    waitForConnections: true,
+ * });
+ *
+ *
+ * // For individual execution
+ * const getUser = async () => {
+ *    const connection = await pool.getConnection();
+ *    const dbName = "sample_db";
+ *    const sql = "SELECT * FROM users WHERE id = ?";
+ *    const params = [userId];
+ *
+ *    try{
+ *        const result = await executeDbQuery(connection, dbName, sql, params);
+ *        return result;
+ *    } catch(error){
+ *        res.status(500).send(error.message);
+ *    } finally {
+ *      await connection.release();
+ *    }
+ * }
+ *
+ * // For parallel execution
+ * const getUserParallel = async () => {
+ *    const connection = await pool.getConnection();
+ *    const dbName = "sample_db";
+ *    const sql = ["SELECT * FROM user_books WHERE id = ?", "SELECT * FROM users WHERE id = ?"];
+ *    const params = [[userId], [userId]];
+ *    const options = { parallel: true };
+ *
+ *    try{
+ *        // Executes all query using Promise.all, running them simultaneously.
+ *        // Remember when using this, no query must be dependent to each other.
+ *        const result = await executeDbQuery(connection, dbName, sql, params, options);
+ *        res.send(result);
+ *    } catch(error){
+ *        res.status(500).send(error.message);
+ *    } finally {
+ *      await connection.release();
+ *    }
+ * }
+ *
+ * ```
+ */
 const executeQueryConn = async (
   conn: Connection,
   dbName: string,
