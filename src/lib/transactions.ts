@@ -113,14 +113,14 @@ export const initializeDbTransaction = async (
           LogState.DEBUGMODE
         );
         await dbObject.connection.commit();
-        log.green(`Done. Commit success.`, "commitTransaction");
+        log.green(`Done. Commit success.`, "commitTransaction", LogState.DEBUGMODE);
       } catch (error: any) {
-        log.red(`Force exit. Rollbacking transaction...`, "initTransaction");
+        log.red(`Force exit. Rollbacking transaction...`, "initTransaction", LogState.DEBUGMODE);
         if (error.code !== "CONN_NOT_INIT") {
           await rollbackTransaction();
           log.red(
             `Force exit. Transaction rollback done...`,
-            "initTransaction"
+            "initTransaction", LogState.DEBUGMODE
           );
           throw new TransactionError(
             `Failed to commit transaction: ${(error.message, error.code)}`
@@ -152,9 +152,9 @@ export const initializeDbTransaction = async (
           LogState.DEBUGMODE
         );
         await dbObject.connection.rollback();
-        log.green(`Done. Transaction rollback success.`, "rollbackTransaction");
+        log.green(`Done. Transaction rollback success.`, "rollbackTransaction", LogState.DEBUGMODE);
       } catch (error: any) {
-        log.red(`Force exit.`, "rollbackTransaction");
+        log.red(`Force exit.`, "rollbackTransaction", LogState.DEBUGMODE);
         throw new TransactionError(
           `Failed to rollback transaction: ${(error.message, error.code)}`,
           error.code
@@ -178,10 +178,10 @@ export const initializeDbTransaction = async (
 
       try {
         dbObject = getDbObject(req);
-        log.green(`Done. Connection is initialized`, "retrieveRecords");
+        log.green(`Done. Connection is initialized`, "retrieveRecords", LogState.DEBUGMODE);
         return { ...dbObject, connection: "initialized" };
       } catch (error: any) {
-        log.green(`Done. Connection is not initialized`, "retrieveRecords");
+        log.green(`Done. Connection is not initialized`, "retrieveRecords" , LogState.DEBUGMODE);
         return { connection: "not initialized", error: error.message };
       }
     };

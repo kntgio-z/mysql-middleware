@@ -92,11 +92,11 @@ export const executeDbQuery2 = async (
         const [rows] = await conn.execute(sql, params);
         queryResult = rows;
       }
-      log.green("Success. Query executed", "executeDbQuery");
+      log.green("Success. Query executed", "executeDbQuery", LogState.DEBUGMODE);
 
       return queryResult;
     } catch (error: any) {
-      log.red("Force exit.", "executeDbQuery");
+      log.red("Force exit.", "executeDbQuery", LogState.DEBUGMODE);
       throw error;
     }
   });
