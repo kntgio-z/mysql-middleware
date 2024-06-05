@@ -175,3 +175,4 @@ export const getMysql = (
 };
 
 export * from "./types/index";
+export { executeDbQuery2 as executeDbQuery } from "./lib/query";
