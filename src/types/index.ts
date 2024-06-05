@@ -55,7 +55,11 @@ export interface DatabaseInstance {
    * @returns A promise that resolves with the query result.
    * @throws DatabaseError - If there is an error executing the query.
    */
-  query: (sql: string, params?: any[]) => Promise<any>;
+  query: (
+    sql: string,
+    params: any[],
+    options?: ExecuteDbQueryOptions
+  ) => Promise<any>;
   /**
    * Begins a database transaction with the specified isolation level.
    *
