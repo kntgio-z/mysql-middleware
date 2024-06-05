@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [2.1.0](https://github.com/kntgio-z/mysql-middleware/compare/v2.0.1...v2.1.0) (2024-06-05)
+
+
+### Bug Fixes
+
+* **query:** Fix the code logic where the parralel and sequential ops are interchanged ([688a718](https://github.com/kntgio-z/mysql-middleware/commit/688a718645e54bf1c7712abd366a33f945ed1a80))
+
 ### [2.0.1](https://github.com/kntgio-z/mysql-middleware/compare/v2.0.0...v2.0.1) (2024-06-05)
 
 ## [2.0.0](https://github.com/kntgio-z/mysql-middleware/compare/v1.0.0...v2.0.0) (2024-06-05)
