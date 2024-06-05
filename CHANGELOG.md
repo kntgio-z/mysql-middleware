@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [0.6.0](https://github.com/kntgio-z/mysql-middleware/compare/v0.5.3...v0.6.0) (2024-06-05)
+
+
+### Features
+
+* **query:** Enable use of executeDbQuery, providing a query with deadlock management ([872755a](https://github.com/kntgio-z/mysql-middleware/commit/872755a2eba9f087e12e1b013b5c772b9693a6f3))
+
 ### [0.5.3](https://github.com/kntgio-z/mysql-middleware/compare/v0.5.2...v0.5.3) (2024-06-04)
 
 ### [0.5.2](https://github.com/kntgio-z/mysql-middleware/compare/v0.5.1...v0.5.2) (2024-06-04)
