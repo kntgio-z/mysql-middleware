@@ -92,7 +92,6 @@ const initializeDatabase = async (
       dispatchDbObject(req);
       dbObject.connection.release();
     } catch (error: any) {
-      console.log(error.code);
       if (error.code === "CONN_NOT_INIT") return;
       else throw new DatabaseError(error.message, error.code);
     }

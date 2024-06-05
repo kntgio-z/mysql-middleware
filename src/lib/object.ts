@@ -21,7 +21,7 @@ const checkSessionObject = (req: TralseRequest): void => {
     "checkSessionObject",
     LogState.DEBUGMODE
   );
-  log.magenta("In checkSessionObject, checking session", LogState.DEBUGMODE);
+  log.magenta("Checking session", "checkSessionObject", LogState.DEBUGMODE);
   if (!req.session) {
     log.red(`Force exit.`, "checkSessionObject", LogState.DEBUGMODE);
     throw new DatabaseError(

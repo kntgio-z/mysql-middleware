@@ -71,7 +71,7 @@ export const initializeDbTransaction = async (
 
         updateDbObject(req, transactionData);
 
-        log.green(`Done. Transaction success.`, "initTransaction");
+        log.green(`Done. Transaction success.`, "initTransaction", LogState.DEBUGMODE);
         return queryResult;
       } catch (error: any) {
         log.red(
