@@ -5,7 +5,6 @@ import { Connection, QueryResult } from "mysql2/promise";
 import { ExecuteDbQueryOptions, TralseRequest } from "../types";
 import { log, LogState } from "@tralse/developer-logs";
 
-
 export const executeDbQuery: {
   /**
    * Executes a database query with deadlock management.
@@ -224,24 +223,28 @@ export const executeDbQuery: {
         }
         queryResult = [];
         if (options && options.parallel) {
-          // Executes queries individually
-          for (let i = 0; i < sql.length; i++) {
-            const [rows] = await connection.execute(sql[i], params[i]);
-            queryResult.push(rows);
-          }
-        } else {
           // Execute all queries in parallel
           const promises = sql.map((query, index) => {
             return connection.execute(query, params[index]);
           });
           const resultsArray = await Promise.all(promises);
           queryResult = resultsArray.map(([rows]) => rows);
+        } else {
+          // Executes queries individually
+          for (let i = 0; i < sql.length; i++) {
+            const [rows] = await connection.execute(sql[i], params[i]);
+            queryResult.push(rows);
+          }
         }
       } else {
         const [rows] = await connection.execute(sql, params);
         queryResult = rows;
       }
-      log.green("Success. Query executed", "executeDbQuery", LogState.DEBUGMODE);
+      log.green(
+        "Success. Query executed",
+        "executeDbQuery",
+        LogState.DEBUGMODE
+      );
 
       return queryResult;
     } catch (error: any) {
