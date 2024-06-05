@@ -69,7 +69,7 @@ export const executeDbQuery: {
    *        // Acquire a connection from the pool
    *        await initializeConnection();
    *
-   *        const result = await executeDbQuery(req, dbName, sql, params);
+   *        const result = await query(req, dbName, sql, params);
    *        res.send(result);
    *    } catch(error){
    *        res.status(500).send(error.message);
@@ -97,7 +97,7 @@ export const executeDbQuery: {
    *
    *        // Executes all query using Promise.all, running them simultaneously.
    *        // Remember when using this, no query must be dependent to each other.
-   *        const result = await executeDbQuery(req, dbName, sql, params, options);
+   *        const result = await query(req, dbName, sql, params, options);
    *        res.send(result);
    *    } catch(error){
    *        res.status(500).send(error.message);
