@@ -4,7 +4,17 @@ import { SessionData } from "express-session";
 // TODO: Revise
 export type QueryFunction = () => Promise<any>;
 
-interface TralseSessionData extends SessionData {
+/**
+ * Options for configuring the behavior of the executeDbQuery function.
+ */
+export interface ExecuteDbQueryOptions {
+  /**
+   * Indicates whether to execute the queries in parallel.
+   */
+  parallel: boolean;
+}
+
+export interface TralseSessionData extends SessionData {
   tralse_db_mysql: {
     connectionId: string;
   };

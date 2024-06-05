@@ -4,7 +4,7 @@ import { manageDeadlocks } from "./deadlock";
 import { TransactionMethods } from "../types";
 import { TralseRequest } from "../types";
 import { log, LogState } from "@tralse/developer-logs";
-import { executeDbQuery2 } from "./query";
+import { executeDbQuery } from "./query";
 
 /**
  * Initializes a transaction.
@@ -55,7 +55,7 @@ export const initializeDbTransaction = async (
 
         await connection.beginTransaction();
 
-        let queryResult = await executeDbQuery2(
+        let queryResult = await executeDbQuery(
           connection,
           dbName,
           sql,

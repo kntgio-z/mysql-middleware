@@ -6,13 +6,14 @@ import {
 import { executeDbQuery } from "./lib/query";
 import { DatabaseError } from "./errors/error";
 import { initializeDbTransaction } from "./lib/transactions";
-import { Pool } from "mysql2/promise";
+import { Connection, Pool, QueryResult } from "mysql2/promise";
 import {
   DatabaseInstance,
   TransactionMethods,
   TralseRequest,
   TralseResponse,
   TralseNext,
+  ExecuteDbQueryOptions,
 } from "./types";
 
 /**
@@ -174,5 +175,15 @@ export const getMysql = (
   return req.tralse_db_mysql[name];
 };
 
+const executeQueryConn = async (
+  conn: Connection,
+  dbName: string,
+  sql: string | string[],
+  params?: any[] | any[][],
+  options?: ExecuteDbQueryOptions
+): Promise<QueryResult | QueryResult[]> => {
+  return await executeDbQuery(conn, dbName, sql, params, options);
+};
+
 export * from "./types/index";
-export { executeDbQuery2 as executeDbQuery } from "./lib/query";
+export { executeQueryConn as executeDbQuery };
