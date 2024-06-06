@@ -1,4 +1,4 @@
-[> Back](./TRALSEMYSQL.md)
+[> Back](../README.md)
 
 # dbQuery Method
 
