@@ -65,16 +65,13 @@ const initializeDatabase = async (
   };
 
   /**
-   * Begins a database transaction with the specified isolation level.
+   * Begins a database transaction.
    *
-   * @param isolationLevel - The isolation level for the transaction. Defaults to "READ COMMITTED".
    * @returns A promise that resolves with the transaction methods.
    * @throws DatabaseError - If there is an error initializing the transaction.
    */
-  const transaction = async (
-    isolationLevel: string = "READ COMMITTED"
-  ): Promise<TransactionMethods> => {
-    return await initializeDbTransaction(req, dbName, isolationLevel);
+  const transaction = async (): Promise<TransactionMethods> => {
+    return await initializeDbTransaction(req, dbName);
   };
 
   /**
