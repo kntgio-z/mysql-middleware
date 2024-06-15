@@ -1,3 +1,5 @@
 /tralsedb-express-mysql
 /dist
 /node_modules
+/__test__
+jsconfig.json
