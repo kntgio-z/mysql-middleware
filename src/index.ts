@@ -61,7 +61,7 @@ const initializeDatabase = async (
     params: any[] = [],
     options?: ExecuteDbQueryOptions
   ): Promise<any> => {
-    return await executeDbQuery(req, dbName, sql, params, options);
+    return await executeDbQuery(req, sql, params, options);
   };
 
   /**
@@ -71,7 +71,7 @@ const initializeDatabase = async (
    * @throws DatabaseError - If there is an error initializing the transaction.
    */
   const transaction = async (): Promise<TransactionMethods> => {
-    return await initializeDbTransaction(req, dbName);
+    return await initializeDbTransaction(req);
   };
 
   /**
@@ -183,7 +183,6 @@ export const getMysql = (
  * This function allows executing database queries with deadlock management. It supports both individual and parallel asynchronous execution.
  *
  * @param conn - The MySQL connection.
- * @param dbName - The name of the database connection.
  * @param sql - The SQL query or queries to execute.
  * @param params - The parameters for the SQL query or queries.
  * @param options - Optional settings for configuring query execution behavior.
@@ -209,12 +208,11 @@ export const getMysql = (
  * // For individual execution
  * const getUser = async () => {
  *    const connection = await pool.getConnection();
- *    const dbName = "sample_db";
  *    const sql = "SELECT * FROM users WHERE id = ?";
  *    const params = [userId];
  *
  *    try{
- *        const result = await executeDbQuery(connection, dbName, sql, params);
+ *        const result = await executeDbQuery(connection, sql, params);
  *        return result;
  *    } catch(error){
  *        res.status(500).send(error.message);
@@ -226,7 +224,6 @@ export const getMysql = (
  * // For parallel execution
  * const getUserParallel = async () => {
  *    const connection = await pool.getConnection();
- *    const dbName = "sample_db";
  *    const sql = ["SELECT * FROM user_books WHERE id = ?", "SELECT * FROM users WHERE id = ?"];
  *    const params = [[userId], [userId]];
  *    const options = { parallel: true };
@@ -234,7 +231,7 @@ export const getMysql = (
  *    try{
  *        // Executes all query using Promise.all, running them simultaneously.
  *        // Remember when using this, no query must be dependent to each other.
- *        const result = await executeDbQuery(connection, dbName, sql, params, options);
+ *        const result = await executeDbQuery(connection, sql, params, options);
  *        res.send(result);
  *    } catch(error){
  *        res.status(500).send(error.message);
@@ -247,12 +244,11 @@ export const getMysql = (
  */
 const executeQueryConn = async (
   conn: Connection,
-  dbName: string,
   sql: string | string[],
   params?: any[] | any[][],
   options?: ExecuteDbQueryOptions
 ): Promise<QueryResult | QueryResult[]> => {
-  return await executeDbQuery(conn, dbName, sql, params, options);
+  return await executeDbQuery(conn, sql, params, options);
 };
 
 export * from "./types/index";

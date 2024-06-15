@@ -10,13 +10,11 @@ import { executeDbQuery } from "./query";
  * Initializes a transaction.
  *
  * @param req - The request object.
- * @param dbName - The name of the database connection.
  * @returns The transaction methods.
  * @throws TransactionError - If there is an error initializing the transaction.
  */
 export const initializeDbTransaction = async (
-  req: TralseRequest,
-  dbName: string
+  req: TralseRequest
 ): Promise<TransactionMethods> => {
   /**
    * Initializes a transaction, executes the provided SQL queries with parameters, and generates a reference number.
@@ -50,7 +48,7 @@ export const initializeDbTransaction = async (
 
       await connection.beginTransaction();
 
-      let queryResult = await executeDbQuery(connection, dbName, sql, params);
+      let queryResult = await executeDbQuery(connection, sql, params);
 
       const referenceNo = generateReferenceNo ? generateReferenceNo() : "refNo";
       const transactionData = {

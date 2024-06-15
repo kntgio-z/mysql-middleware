@@ -13,7 +13,6 @@ export const executeDbQuery: {
    * Compatible only for middleware and TralseMySql must be used. This function allows executing database queries with deadlock management. It supports both individual and parallel asynchronous execution.
    *
    * @param req - The request object.
-   * @param dbName - The name of the database connection.
    * @param sql - The SQL query or queries to execute.
    * @param params - The parameters for the SQL query or queries.
    * @param options - Optional settings for configuring query execution behavior.
@@ -60,7 +59,6 @@ export const executeDbQuery: {
    *        "sample"
    *    );
    *
-   *    const dbName = "sample_db";
    *    const sql = "SELECT * FROM users WHERE id = ?";
    *    const params = [userId];
    *
@@ -68,7 +66,7 @@ export const executeDbQuery: {
    *        // Acquire a connection from the pool
    *        await initializeConnection();
    *
-   *        const result = await query(req, dbName, sql, params);
+   *        const result = await query(sql, params);
    *        res.send(result);
    *    } catch(error){
    *        res.status(500).send(error.message);
@@ -85,7 +83,6 @@ export const executeDbQuery: {
    *        "sample"
    *    );
    *
-   *    const dbName = "sample_db";
    *    const sql = ["SELECT * FROM user_books WHERE id = ?", "SELECT * FROM users WHERE id = ?"];
    *    const params = [[userId], [userId]];
    *    const options = { parallel: true };
@@ -96,7 +93,7 @@ export const executeDbQuery: {
    *
    *        // Executes all query using Promise.all, running them simultaneously.
    *        // Remember when using this, no query must be dependent to each other.
-   *        const result = await query(req, dbName, sql, params, options);
+   *        const result = await query(sql, params, options);
    *        res.send(result);
    *    } catch(error){
    *        res.status(500).send(error.message);
@@ -113,7 +110,6 @@ export const executeDbQuery: {
    */
   (
     req: TralseRequest,
-    dbName: string,
     sql: string | string[],
     params?: any[] | any[][],
     options?: ExecuteDbQueryOptions
@@ -125,7 +121,6 @@ export const executeDbQuery: {
    * This function allows executing database queries with deadlock management. It supports both individual and parallel asynchronous execution.
    *
    * @param conn - The MySQL connection.
-   * @param dbName - The name of the database connection.
    * @param sql - The SQL query or queries to execute.
    * @param params - The parameters for the SQL query or queries.
    * @param options - Optional settings for configuring query execution behavior.
@@ -151,12 +146,11 @@ export const executeDbQuery: {
    * // For individual execution
    * const getUser = async () => {
    *    const connection = await pool.getConnection();
-   *    const dbName = "sample_db";
    *    const sql = "SELECT * FROM users WHERE id = ?";
    *    const params = [userId];
    *
    *    try{
-   *        const result = await executeDbQuery(connection, dbName, sql, params);
+   *        const result = await executeDbQuery(connection, sql, params);
    *        return result;
    *    } catch(error){
    *        res.status(500).send(error.message);
@@ -168,7 +162,6 @@ export const executeDbQuery: {
    * // For parallel execution
    * const getUserParallel = async () => {
    *    const connection = await pool.getConnection();
-   *    const dbName = "sample_db";
    *    const sql = ["SELECT * FROM user_books WHERE id = ?", "SELECT * FROM users WHERE id = ?"];
    *    const params = [[userId], [userId]];
    *    const options = { parallel: true };
@@ -176,7 +169,7 @@ export const executeDbQuery: {
    *    try{
    *        // Executes all query using Promise.all, running them simultaneously.
    *        // Remember when using this, no query must be dependent to each other.
-   *        const result = await executeDbQuery(connection, dbName, sql, params, options);
+   *        const result = await executeDbQuery(connection, sql, params, options);
    *        res.send(result);
    *    } catch(error){
    *        res.status(500).send(error.message);
@@ -189,14 +182,12 @@ export const executeDbQuery: {
    */
   (
     conn: Connection,
-    dbName: string,
     sql: string | string[],
     params?: any[] | any[][],
     options?: ExecuteDbQueryOptions
   ): Promise<QueryResult | QueryResult[]>;
 } = async (
   arg1: TralseRequest | Connection,
-  dbName: string,
   sql: string | string[],
   params: any[] | any[][] = [],
   options?: ExecuteDbQueryOptions
