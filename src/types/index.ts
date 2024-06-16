@@ -85,20 +85,23 @@ export interface DatabaseInstance {
 
 export interface TransactionMethods {
   /**
-   * Initializes a transaction, executes the provided SQL queries with parameters, and generates a reference number.
+   * Initializes a transaction.
+   *
+   * @returns A promise that resolves with the result of the SQL query or an array of results for multiple queries.
+   * @throws DatabaseError - If there is  an error occurs during execution.
+   * @throws TransactionError - If the transaction initialization fails.
+   */
+  init: () => Promise<void>;
+  /**
+   * Performs a transaction query, executes the provided SQL queries with parameters.
    *
    * @param sql - The SQL query or an array of SQL queries to execute.
    * @param params - The parameters for the SQL query or an array of parameters for multiple queries.
-   * @param generateReferenceNo - An optional function to generate a reference number for the transaction. If this is sets null, it automatically uses the default reference number maker.
    * @returns A promise that resolves with the result of the SQL query or an array of results for multiple queries.
    * @throws DatabaseError - If there is a mismatch between SQL queries and parameters or any other error occurs during execution.
    * @throws TransactionError - If the transaction initialization fails.
    */
-  init: (
-    sql: string | string[],
-    params?: any | any[],
-    generateReferenceNo?: (() => string) | null
-  ) => Promise<any | any[]>;
+  query: (sql: string | string[], params?: any | any[]) => Promise<any | any[]>;
   /**
    * Commits the current transaction.
    *

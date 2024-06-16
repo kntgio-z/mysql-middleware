@@ -17,26 +17,15 @@ export const initializeDbTransaction = async (
   req: TralseRequest
 ): Promise<TransactionMethods> => {
   /**
-   * Initializes a transaction, executes the provided SQL queries with parameters, and generates a reference number.
+   * Initializes a transaction.
    *
-   * @param sql - The SQL query or an array of SQL queries to execute.
-   * @param params - The parameters for the SQL query or an array of parameters for multiple queries.
-   * @param generateReferenceNo - An optional function to generate a reference number for the transaction. If this is sets null, it automatically uses the default reference number maker.
    * @returns A promise that resolves with the result of the SQL query or an array of results for multiple queries.
-   * @throws DatabaseError - If there is a mismatch between SQL queries and parameters or any other error occurs during execution.
+   * @throws DatabaseError - If there is  an error occurs during execution.
    * @throws TransactionError - If the transaction initialization fails.
    */
-  const initTransaction = async (
-    sql: string | string[],
-    params: any | any[] = [],
-    generateReferenceNo: (() => string) | null = null
-  ): Promise<any | any[]> => {
+  const init = async (): Promise<void> => {
     try {
-      log.magenta(
-        `Initializing transaction...`,
-        "initTransaction",
-        LogState.DEBUGMODE
-      );
+      log.magenta(`Initializing transaction...`, "init", LogState.DEBUGMODE);
 
       const dbObject = getDbObject(req);
 
@@ -48,33 +37,72 @@ export const initializeDbTransaction = async (
 
       await connection.beginTransaction();
 
+      log.green(
+        `Done. Transaction initialization success.`,
+        "init",
+        LogState.DEBUGMODE
+      );
+    } catch (error: any) {
+      log.red(`Force exit. Exiting transaction...`, "init", LogState.DEBUGMODE);
+      if (error instanceof DatabaseError || error instanceof TransactionError)
+        throw new TransactionError(
+          `Failed to initialize transaction: ${(error.message, error.code)}`
+        );
+      else throw error;
+    }
+  };
+
+  //  * @param generateReferenceNo - An optional function to generate a reference number for the transaction. If this is sets null, it automatically uses the default reference number maker.
+
+  /**
+   * Performs a transaction query, executes the provided SQL queries with parameters.
+   *
+   * @param sql - The SQL query or an array of SQL queries to execute.
+   * @param params - The parameters for the SQL query or an array of parameters for multiple queries.
+   * @returns A promise that resolves with the result of the SQL query or an array of results for multiple queries.
+   * @throws DatabaseError - If there is a mismatch between SQL queries and parameters or any other error occurs during execution.
+   * @throws TransactionError - If the transaction initialization fails.
+   */
+  const query = async (
+    sql: string | string[],
+    params: any | any[] = []
+  ): Promise<any | any[]> => {
+    try {
+      log.magenta(
+        `Executing transaction query...`,
+        "query",
+        LogState.DEBUGMODE
+      );
+
+      const dbObject = getDbObject(req);
+
+      if (!dbObject || !dbObject.connection) {
+        throw new DatabaseError("Database object or connection is undefined.");
+      }
+
+      const { connection } = dbObject;
+
       let queryResult = await executeDbQuery(connection, sql, params);
 
-      const referenceNo = generateReferenceNo
-        ? generateReferenceNo()
-        : systemGenerateReferenceNo();
-      const transactionData = {
-        referenceNo,
-      };
+      // const referenceNo = generateReferenceNo
+      //   ? generateReferenceNo()
+      //   : systemGenerateReferenceNo();
+      // const transactionData = {
+      //   referenceNo,
+      // };
 
-      updateDbObject(req, transactionData);
+      // updateDbObject(req, transactionData);
 
       log.green(
-        `Done. Transaction success.`,
-        "initTransaction",
+        `Done. Transaction query execution success.`,
+        "query",
         LogState.DEBUGMODE
       );
       return queryResult;
     } catch (error: any) {
       log.red(
-        `Force exit. Rollbacking transaction...`,
-        "initTransaction",
-        LogState.DEBUGMODE
-      );
-      //// await rollbackTransaction();
-      log.red(
-        `Force exit. Transaction rollback done...`,
-        "initTransaction",
+        `Force exit. Exiting transaction...`,
+        "query",
         LogState.DEBUGMODE
       );
       if (error instanceof DatabaseError || error instanceof TransactionError)
@@ -91,36 +119,22 @@ export const initializeDbTransaction = async (
    * @returns A promise that resolves when the transaction is committed.
    * @throws TransactionError - If the transaction commit fails.
    */
-  const commitTransaction = async (): Promise<void> => {
+  const commit = async (): Promise<void> => {
     try {
       const dbObject = getDbObject(req);
-      if (!dbObject || !dbObject.connection || !dbObject.referenceNo) {
+      if (!dbObject || !dbObject.connection) {
         throw new DatabaseError("Database object or connection is undefined.");
       }
-      log.magenta(
-        `Committing transaction...`,
-        "commitTransaction",
-        LogState.DEBUGMODE
-      );
+      log.magenta(`Committing transaction...`, "commit", LogState.DEBUGMODE);
       await dbObject.connection.commit();
-      log.green(
-        `Done. Commit success.`,
-        "commitTransaction",
-        LogState.DEBUGMODE
-      );
+      log.green(`Done. Commit success.`, "commit", LogState.DEBUGMODE);
     } catch (error: any) {
       log.red(
-        `Force exit. Rollbacking transaction...`,
-        "initTransaction",
+        `Force exit. Exiting transaction...`,
+        "commit",
         LogState.DEBUGMODE
       );
       if (error.code !== "CONN_NOT_INIT") {
-        //// await rollbackTransaction();
-        log.red(
-          `Force exit. Transaction rollback done...`,
-          "initTransaction",
-          LogState.DEBUGMODE
-        );
         throw new TransactionError(
           `Failed to commit transaction: ${(error.message, error.code)}`
         );
@@ -136,26 +150,26 @@ export const initializeDbTransaction = async (
    * @returns A promise that resolves when the transaction is rolled back.
    * @throws TransactionError - If the transaction rollback fails.
    */
-  const rollbackTransaction = async (): Promise<void> => {
+  const rollback = async (): Promise<void> => {
     try {
       const dbObject = getDbObject(req);
 
       if (!dbObject || !dbObject.connection || !dbObject.referenceNo) {
         throw new DatabaseError("Database object or connection is undefined.");
       }
-      log.magenta(
-        `Rollbacking transaction...`,
-        "rollbackTransaction",
-        LogState.DEBUGMODE
-      );
+      log.magenta(`Rollbacking transaction...`, "rollback", LogState.DEBUGMODE);
       await dbObject.connection.rollback();
       log.green(
         `Done. Transaction rollback success.`,
-        "rollbackTransaction",
+        "rollback",
         LogState.DEBUGMODE
       );
     } catch (error: any) {
-      log.red(`Force exit.`, "rollbackTransaction", LogState.DEBUGMODE);
+      log.red(
+        `Force exit. Exiting transaction...`,
+        "rollback",
+        LogState.DEBUGMODE
+      );
       throw new TransactionError(
         `Failed to rollback transaction: ${(error.message, error.code)}`,
         error.code
@@ -163,28 +177,36 @@ export const initializeDbTransaction = async (
     }
   };
 
+  // /**
+  //  * Built-in method to generate a reference number. This generates a reference number by concatenating a UUID and the current timestamp in the system's default timezone.
+  //  * @returns The generated reference number combining a UUID and the current timestamp.
+  //  */
+  // const generateRefNo = (): string => {
+  //   return systemGenerateReferenceNo();
+  // };
+
   /**
    * Retrieves the database object and additional connection status.
    *
    * @returns An object containing the connection status and other properties from the database object.
    */
-  const retrieveRecords = (): { connection: string; [key: string]: any } => {
+  const retrieve = (): { connection: string; [key: string]: any } => {
     let dbObject;
 
-    log.magenta(`Retrieving records...`, "retrieveRecords", LogState.DEBUGMODE);
+    log.magenta(`Retrieving records...`, "retrieve", LogState.DEBUGMODE);
 
     try {
       dbObject = getDbObject(req);
       log.green(
         `Done. Connection is initialized`,
-        "retrieveRecords",
+        "retrieve",
         LogState.DEBUGMODE
       );
       return { ...dbObject, connection: "initialized" };
     } catch (error: any) {
       log.green(
         `Done. Connection is not initialized`,
-        "retrieveRecords",
+        "retrieve",
         LogState.DEBUGMODE
       );
       return { connection: "not initialized", error: error.message };
@@ -192,9 +214,10 @@ export const initializeDbTransaction = async (
   };
 
   return {
-    init: initTransaction,
-    commit: commitTransaction,
-    rollback: rollbackTransaction,
-    retrieve: retrieveRecords,
+    init,
+    query,
+    commit,
+    rollback,
+    retrieve
   };
 };
