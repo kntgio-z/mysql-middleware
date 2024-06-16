@@ -1,4 +1,4 @@
-import { PoolConnection as Connection } from "mysql2/promise";
+import { PoolConnection as Connection, QueryResult } from "mysql2/promise";
 import { Request, Response, NextFunction } from "express";
 import { SessionData } from "express-session";
 // TODO: Revise
@@ -59,15 +59,14 @@ export interface DatabaseInstance {
     sql: string,
     params: any[],
     options?: ExecuteDbQueryOptions
-  ) => Promise<any>;
+  ) => Promise<QueryResult | QueryResult[]>;
   /**
-   * Begins a database transaction with the specified isolation level.
+   * Begins a database transaction.
    *
-   * @param isolationLevel - The isolation level for the transaction. Defaults to "READ COMMITTED".
    * @returns A promise that resolves with the transaction methods.
    * @throws DatabaseError - If there is an error initializing the transaction.
    */
-  transaction?: (isolationLevel?: string) => Promise<TransactionMethods>;
+  transaction?: () => Promise<TransactionMethods>;
   /**
    * Releases the current mysql connection.
    *
@@ -90,7 +89,7 @@ export interface TransactionMethods {
    *
    * @param sql - The SQL query or an array of SQL queries to execute.
    * @param params - The parameters for the SQL query or an array of parameters for multiple queries.
-   * @param generateReferenceNo - An optional function to generate a reference number for the transaction.
+   * @param generateReferenceNo - An optional function to generate a reference number for the transaction. If this is sets null, it automatically uses the default reference number maker.
    * @returns A promise that resolves with the result of the SQL query or an array of results for multiple queries.
    * @throws DatabaseError - If there is a mismatch between SQL queries and parameters or any other error occurs during execution.
    * @throws TransactionError - If the transaction initialization fails.
