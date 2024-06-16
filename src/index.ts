@@ -21,7 +21,6 @@ import {
  *
  * @param req - The request object.
  * @param pool - The database connection pool.
- * @param dbName - The name of the database.
  * @param enableTransactions - Whether to enable transaction support.
  * @returns The initialized database object.
  * @throws DatabaseError - If there is an error initializing the database.
@@ -29,7 +28,6 @@ import {
 const initializeDatabase = async (
   req: TralseRequest,
   pool: Pool,
-  dbName: string,
   enableTransactions: boolean
 ): Promise<DatabaseInstance> => {
   /**
@@ -60,7 +58,7 @@ const initializeDatabase = async (
     sql: string,
     params: any[] = [],
     options?: ExecuteDbQueryOptions
-  ): Promise<any> => {
+  ): Promise<QueryResult | QueryResult[]> => {
     return await executeDbQuery(req, sql, params, options);
   };
 
@@ -142,7 +140,6 @@ export const TralseMySQL = (
       const dbInstance = await initializeDatabase(
         req,
         pool,
-        dbName,
         enableTransactions
       );
       req.tralse_db_mysql[dbName] = dbInstance;
