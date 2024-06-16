@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [3.1.0](https://github.com/kntgio-z/mysql-middleware/compare/v3.0.1...v3.1.0) (2024-06-16)
+
+
+### Features
+
+* **ref:** Change logic of reference number. Now, reference number is now fetched on the retrieve method, together with other details: connection flag and timestamp. ([0ea301e](https://github.com/kntgio-z/mysql-middleware/commit/0ea301e16e17dcd3c181ed9958bb252518acef55))
+
 ### [3.0.1](https://github.com/kntgio-z/mysql-middleware/compare/v3.0.0...v3.0.1) (2024-06-16)
 
 ## [3.0.0](https://github.com/kntgio-z/mysql-middleware/compare/v2.4.0...v3.0.0) (2024-06-16)
