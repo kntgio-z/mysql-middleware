@@ -4,7 +4,10 @@ import { TransactionMethods } from "../types";
 import { TralseRequest } from "../types";
 import { log, LogState } from "@tralse/developer-logs";
 import { executeDbQuery } from "./query";
-import { generateRefNo as systemGenerateReferenceNo } from "../helpers/ref";
+import {
+  generateRefNo,
+  generateRefNo as systemGenerateReferenceNo,
+} from "../helpers/ref";
 import { QueryResult } from "mysql2/promise";
 /**
  * Initializes a transaction.
@@ -82,11 +85,15 @@ export const initializeDbTransaction = async (
 
       let queryResult = await executeDbQuery(connection, sql, params);
 
+      const { uuid, timestamp } = systemGenerateReferenceNo();
+      updateDbObject(req, { referenceNo: uuid, timestamp });
+
       log.green(
         `Done. Transaction query execution success.`,
         "query",
         LogState.DEBUGMODE
       );
+
       return queryResult;
     } catch (error: any) {
       log.red(
@@ -167,19 +174,11 @@ export const initializeDbTransaction = async (
   };
 
   /**
-   * Built-in method to generate a reference number. This generates a reference number by concatenating a UUID and the current timestamp in the system's default timezone.
-   * @returns The generated reference number combining a UUID and the current timestamp.
-   */
-  const generateRefNo = (): string => {
-    return systemGenerateReferenceNo();
-  };
-
-  /**
    * Retrieves the database object and additional connection status.
    *
    * @returns An object containing the connection status and other properties from the database object.
    */
-  const retrieve = (): { connection: string; [key: string]: any } => {
+  const retrieve = () => {
     let dbObject;
 
     log.magenta(`Retrieving records...`, "retrieve", LogState.DEBUGMODE);
@@ -191,14 +190,23 @@ export const initializeDbTransaction = async (
         "retrieve",
         LogState.DEBUGMODE
       );
-      return { ...dbObject, connection: "initialized" };
+
+      if (dbObject) {
+        const { timeoutId, ...newDbObject } = dbObject;
+        return {
+          ...newDbObject,
+          connection: !!newDbObject.connection,
+        };
+      } else {
+        throw new Error("dbObject is null or undefined.");
+      }
     } catch (error: any) {
       log.green(
         `Done. Connection is not initialized`,
         "retrieve",
         LogState.DEBUGMODE
       );
-      return { connection: "not initialized", error: error.message };
+      throw error;
     }
   };
 
@@ -208,6 +216,5 @@ export const initializeDbTransaction = async (
     commit,
     rollback,
     retrieve,
-    generateRefNo
   };
 };
