@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [2.3.0](https://github.com/kntgio-z/mysql-middleware/compare/v2.2.0...v2.3.0) (2024-06-16)
+
+
+### Features
+
+* **referenceNumber:** Add built-in feature for making reference number ([09a9cff](https://github.com/kntgio-z/mysql-middleware/commit/09a9cffaf92c8addaa22251d6f29660659df43fd))
+
 ## [2.2.0](https://github.com/kntgio-z/mysql-middleware/compare/v2.1.0...v2.2.0) (2024-06-15)
 
 ## [2.1.0](https://github.com/kntgio-z/mysql-middleware/compare/v2.0.1...v2.1.0) (2024-06-05)
