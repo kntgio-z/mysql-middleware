@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [2.4.0](https://github.com/kntgio-z/mysql-middleware/compare/v2.3.1...v2.4.0) (2024-06-16)
+
+
+### Bug Fixes
+
+* **auto rollback in transactions:** Remove auto rollback in transactions methods init and commit. ([a9a867d](https://github.com/kntgio-z/mysql-middleware/commit/a9a867d3c491c9a780c5205821936bfbb10a3555))
+
 ### [2.3.1](https://github.com/kntgio-z/mysql-middleware/compare/v2.3.0...v2.3.1) (2024-06-16)
 
 
