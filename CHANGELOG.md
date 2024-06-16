@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [3.0.0](https://github.com/kntgio-z/mysql-middleware/compare/v2.4.0...v3.0.0) (2024-06-16)
+
+
+### Features
+
+* **reference number:** Add new feature for transactions. Every transaction instance can run the built in reference number generator. ([03ed018](https://github.com/kntgio-z/mysql-middleware/commit/03ed0181fc339a7b13b25f254530f035a0a4ff85))
+* **transaction:** Add new feature on transaction, which can make one or more queries in a transaction instead of just one. ([a6f2f2d](https://github.com/kntgio-z/mysql-middleware/commit/a6f2f2d819a521e859cedee89ff8d61e56145122))
+
 ## [2.4.0](https://github.com/kntgio-z/mysql-middleware/compare/v2.3.1...v2.4.0) (2024-06-16)
 
 
