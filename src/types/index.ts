@@ -117,6 +117,11 @@ export interface TransactionMethods {
    */
   rollback: () => Promise<void>;
   /**
+   * Built-in method to generate a reference number. This generates a reference number by concatenating a UUID and the current timestamp in the system's default timezone.
+   * @returns The generated reference number combining a UUID and the current timestamp.
+   */
+  generateRefNo: () => string;
+  /**
    * Retrieves the database object and additional connection status.
    *
    * @returns An object containing the connection status and other properties from the database object.

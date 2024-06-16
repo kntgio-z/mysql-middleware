@@ -52,8 +52,6 @@ export const initializeDbTransaction = async (
     }
   };
 
-  //  * @param generateReferenceNo - An optional function to generate a reference number for the transaction. If this is sets null, it automatically uses the default reference number maker.
-
   /**
    * Performs a transaction query, executes the provided SQL queries with parameters.
    *
@@ -83,15 +81,6 @@ export const initializeDbTransaction = async (
       const { connection } = dbObject;
 
       let queryResult = await executeDbQuery(connection, sql, params);
-
-      // const referenceNo = generateReferenceNo
-      //   ? generateReferenceNo()
-      //   : systemGenerateReferenceNo();
-      // const transactionData = {
-      //   referenceNo,
-      // };
-
-      // updateDbObject(req, transactionData);
 
       log.green(
         `Done. Transaction query execution success.`,
@@ -177,13 +166,13 @@ export const initializeDbTransaction = async (
     }
   };
 
-  // /**
-  //  * Built-in method to generate a reference number. This generates a reference number by concatenating a UUID and the current timestamp in the system's default timezone.
-  //  * @returns The generated reference number combining a UUID and the current timestamp.
-  //  */
-  // const generateRefNo = (): string => {
-  //   return systemGenerateReferenceNo();
-  // };
+  /**
+   * Built-in method to generate a reference number. This generates a reference number by concatenating a UUID and the current timestamp in the system's default timezone.
+   * @returns The generated reference number combining a UUID and the current timestamp.
+   */
+  const generateRefNo = (): string => {
+    return systemGenerateReferenceNo();
+  };
 
   /**
    * Retrieves the database object and additional connection status.
@@ -218,6 +207,7 @@ export const initializeDbTransaction = async (
     query,
     commit,
     rollback,
-    retrieve
+    retrieve,
+    generateRefNo
   };
 };
