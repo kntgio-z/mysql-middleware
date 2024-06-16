@@ -1,10 +1,10 @@
 import { getDbObject, updateDbObject } from "./object";
 import { TransactionError, DatabaseError } from "../errors/error";
-import { manageDeadlocks } from "./deadlock";
 import { TransactionMethods } from "../types";
 import { TralseRequest } from "../types";
 import { log, LogState } from "@tralse/developer-logs";
 import { executeDbQuery } from "./query";
+import { generateRefNo as systemGenerateReferenceNo } from "../helpers/ref";
 
 /**
  * Initializes a transaction.
@@ -21,7 +21,7 @@ export const initializeDbTransaction = async (
    *
    * @param sql - The SQL query or an array of SQL queries to execute.
    * @param params - The parameters for the SQL query or an array of parameters for multiple queries.
-   * @param generateReferenceNo - An optional function to generate a reference number for the transaction.
+   * @param generateReferenceNo - An optional function to generate a reference number for the transaction. If this is sets null, it automatically uses the default reference number maker.
    * @returns A promise that resolves with the result of the SQL query or an array of results for multiple queries.
    * @throws DatabaseError - If there is a mismatch between SQL queries and parameters or any other error occurs during execution.
    * @throws TransactionError - If the transaction initialization fails.
@@ -50,7 +50,9 @@ export const initializeDbTransaction = async (
 
       let queryResult = await executeDbQuery(connection, sql, params);
 
-      const referenceNo = generateReferenceNo ? generateReferenceNo() : "refNo";
+      const referenceNo = generateReferenceNo
+        ? generateReferenceNo()
+        : systemGenerateReferenceNo();
       const transactionData = {
         referenceNo,
       };
