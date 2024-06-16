@@ -52,7 +52,7 @@ app.post("/pay", async (req, res) => {
     await initializeConnection();
 
     // Start a new transaction
-    const { init } = await transaction();
+    const { init, rollback } = await transaction();
 
     // Execute a query within the transaction
     await init(["SELECT 1"], [null], generateRefNo);
@@ -63,7 +63,7 @@ app.post("/pay", async (req, res) => {
     // Send a success response to the client
     res.json({ message: "Transaction initialized successfully" });
   } catch (error) {
-    // NOTE: automatically rolls back if init is unsuccess.
+    await rollback();
     // Handle any errors that occurred during the transaction
     res.status(500).json({ error: "Transaction failed: " + error.message });
   }
@@ -83,7 +83,7 @@ app.post("/confirm", async (req, res) => {
 
   try {
     // Get the commit method from the transaction object
-    const { commit } = await transaction();
+    const { commit, rollback } = await transaction();
 
     // Commit the transaction
     await commit();
@@ -91,7 +91,7 @@ app.post("/confirm", async (req, res) => {
     // Send a success response to the client
     res.json({ message: "Transaction committed successfully" });
   } catch (error) {
-    // NOTE: automatically rolls back if commit is unsuccess.
+    await rollback();
     // Handle any errors that occurred during the transaction
     res.status(500).json({ error: "Transaction failed: " + error.message });
   } finally {
