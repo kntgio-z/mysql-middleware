@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [2.3.1](https://github.com/kntgio-z/mysql-middleware/compare/v2.3.0...v2.3.1) (2024-06-16)
+
+
+### Bug Fixes
+
+* **types:** Fix type bugs where there is incompatibility in typings of methods. ([a098551](https://github.com/kntgio-z/mysql-middleware/commit/a098551eb702f8150af13bf03b2f5f4047d51d2e))
+
 ## [2.3.0](https://github.com/kntgio-z/mysql-middleware/compare/v2.2.0...v2.3.0) (2024-06-16)
 
 
