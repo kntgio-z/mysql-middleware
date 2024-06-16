@@ -5,7 +5,7 @@ import { TralseRequest } from "../types";
 import { log, LogState } from "@tralse/developer-logs";
 import { executeDbQuery } from "./query";
 import { generateRefNo as systemGenerateReferenceNo } from "../helpers/ref";
-
+import { QueryResult } from "mysql2/promise";
 /**
  * Initializes a transaction.
  *
@@ -64,7 +64,7 @@ export const initializeDbTransaction = async (
   const query = async (
     sql: string | string[],
     params: any | any[] = []
-  ): Promise<any | any[]> => {
+  ): Promise<QueryResult | QueryResult[]> => {
     try {
       log.magenta(
         `Executing transaction query...`,

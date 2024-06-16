@@ -101,7 +101,10 @@ export interface TransactionMethods {
    * @throws DatabaseError - If there is a mismatch between SQL queries and parameters or any other error occurs during execution.
    * @throws TransactionError - If the transaction initialization fails.
    */
-  query: (sql: string | string[], params?: any | any[]) => Promise<any | any[]>;
+  query: (
+    sql: string | string[],
+    params?: any | any[]
+  ) => Promise<QueryResult | QueryResult[]>;
   /**
    * Commits the current transaction.
    *
