@@ -9,7 +9,6 @@
     "test": "jest",
     "prestart": "npm test",
     "build": "tsup",
-    "patch": "npm version patch",
     "pub": "tsup && npm publish --access=public && exit",
     "release": "standard-version",
     "release:minor": "standard-version --release-as minor",
