@@ -71,7 +71,7 @@ export const initializeDbTransaction = async (
         "initTransaction",
         LogState.DEBUGMODE
       );
-      await rollbackTransaction();
+      //// await rollbackTransaction();
       log.red(
         `Force exit. Transaction rollback done...`,
         "initTransaction",
@@ -115,7 +115,7 @@ export const initializeDbTransaction = async (
         LogState.DEBUGMODE
       );
       if (error.code !== "CONN_NOT_INIT") {
-        await rollbackTransaction();
+        //// await rollbackTransaction();
         log.red(
           `Force exit. Transaction rollback done...`,
           "initTransaction",
