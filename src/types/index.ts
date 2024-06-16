@@ -87,7 +87,7 @@ export interface TransactionMethods {
   /**
    * Initializes a transaction.
    *
-   * @returns A promise that resolves with the result of the SQL query or an array of results for multiple queries.
+   * @returns A promise.
    * @throws DatabaseError - If there is  an error occurs during execution.
    * @throws TransactionError - If the transaction initialization fails.
    */
