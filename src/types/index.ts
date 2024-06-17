@@ -117,7 +117,6 @@ export interface TransactionMethods {
    * Rolls back the current transaction.
    *
    * @returns A promise that resolves when the transaction is rolled back.
-   * @throws TransactionError - If the transaction rollback fails.
    */
   rollback: () => Promise<void>;
   /**

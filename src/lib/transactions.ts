@@ -144,15 +144,11 @@ export const initializeDbTransaction = async (
    * Rolls back the current transaction.
    *
    * @returns A promise that resolves when the transaction is rolled back.
-   * @throws TransactionError - If the transaction rollback fails.
    */
   const rollback = async (): Promise<void> => {
-    try {
-      const dbObject = getDbObject(req);
+    const dbObject = getDbObject(req);
 
-      if (!dbObject || !dbObject.connection || !dbObject.referenceNo) {
-        throw new DatabaseError("Database object or connection is undefined.");
-      }
+    if (dbObject && dbObject.connection) {
       log.magenta(`Rollbacking transaction...`, "rollback", LogState.DEBUGMODE);
       await dbObject.connection.rollback();
       log.green(
@@ -160,15 +156,11 @@ export const initializeDbTransaction = async (
         "rollback",
         LogState.DEBUGMODE
       );
-    } catch (error: any) {
-      log.red(
-        `Force exit. Exiting transaction...`,
+    } else {
+      log.green(
+        `Done. No connection initiated. Exiting...`,
         "rollback",
         LogState.DEBUGMODE
-      );
-      throw new TransactionError(
-        `Failed to rollback transaction: ${(error.message, error.code)}`,
-        error.code
       );
     }
   };
