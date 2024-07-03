@@ -1,6 +1,9 @@
 # @tralse/mysql-middleware
 
-This package provides a middleware and helpful methods for modularized and remodified modules on MYSQL database, providing a robust development.
+<span class="badge-npmversion"><a href="https://npmjs.org/package/@tralse/mysql-middleware" title="View this project on NPM"><img src="https://img.shields.io/npm/v/%40tralse%2Fmysql-middleware" alt="NPM version" /></a></span>
+<span class="badge-npmdownloads"><a href="https://npmjs.org/package/pg" title="View this project on NPM"><img src="https://img.shields.io/npm/dm/%40tralse%2Fmysql-middleware.svg" alt="NPM downloads" /></a></span>
+
+This package provides a middleware and helpful methods for modularized and remodified modules on MySQL database, providing a robust development.
 
 ## Key Features
 
@@ -10,12 +13,12 @@ This package provides a middleware and helpful methods for modularized and remod
 ## Installation
 
 ```bash
-npm install @tralse/mysql-middleware express-session express
+npm install @tralse/mysql-middleware express
 ```
 
 ## Usage
 
-- [Usage on TralseMySql](./docs/TRALSEMYSQL.md)
+- [Usage on TralseMySQL](./docs/TRALSEMYSQL.md)
 - [Usage on getDbQuery](./docs/DBQUERY.md)
 
 ## Errors
@@ -28,7 +31,7 @@ npm install @tralse/mysql-middleware express-session express
 
 ## Changelogs
 
-You can see our changelogs [here](./CHANGELOG.md).
+Stay updated of the changes of this package. [View Changelog](./CHANGELOG.md).
 
 ## License
 
