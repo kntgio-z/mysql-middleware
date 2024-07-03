@@ -1,12 +1,7 @@
-import {
-  getDbObject,
-  serializeConnection,
-  dispatchDbObject,
-} from "./lib/object";
 import { executeDbQuery } from "./lib/query";
 import { DatabaseError } from "./errors/error";
 import { initializeDbTransaction } from "./lib/transactions";
-import { Connection, Pool, QueryResult } from "mysql2/promise";
+import mysql from "mysql2/promise";
 import {
   DatabaseInstance,
   TransactionMethods,
@@ -27,19 +22,20 @@ import {
  */
 const initializeDatabase = async (
   req: TralseRequest,
-  pool: Pool,
+  pool: mysql.Pool,
   enableTransactions: boolean
 ): Promise<DatabaseInstance> => {
+  let client: mysql.PoolConnection;
+
   /**
-   * Initializes a mysql connection and serializes it into the request.
+   * Initializes a MySQL connection and serializes it into the request.
    *
    * @returns A promise that resolves when the connection is initialized.
    * @throws DatabaseError - If there is an error initializing the database connection.
    */
   const initializeConnection = async (): Promise<void> => {
     try {
-      const connection = await pool.getConnection();
-      serializeConnection(req, connection);
+      client = await pool.getConnection();
     } catch (error: any) {
       throw new DatabaseError(`Error initializing database. ${error}`);
     }
@@ -58,8 +54,9 @@ const initializeDatabase = async (
     sql: string,
     params: any[] = [],
     options?: ExecuteDbQueryOptions
-  ): Promise<QueryResult | QueryResult[]> => {
-    return await executeDbQuery(req, sql, params, options);
+  ): Promise<| [mysql.QueryResult, mysql.FieldPacket[]]
+  | [mysql.QueryResult, mysql.FieldPacket[]][]> => {
+    return await executeDbQuery(client, sql, params, options);
   };
 
   /**
@@ -69,31 +66,32 @@ const initializeDatabase = async (
    * @throws DatabaseError - If there is an error initializing the transaction.
    */
   const transaction = async (): Promise<TransactionMethods> => {
-    return await initializeDbTransaction(req);
+    return await initializeDbTransaction(client);
   };
 
   /**
-   * Releases the current mysql connection.
+   * Releases the current MySQL connection.
    *
    * @returns A promise that resolves when the connection is released.
    * @throws DatabaseError - If there is an error releasing the connection.
    */
   const releaseConnection = async (): Promise<void> => {
     try {
-      const dbObject = getDbObject(req);
-
-      if (!dbObject || !dbObject.connection)
-        throw new Error("Connection is undefined.");
-      dispatchDbObject(req);
-      dbObject.connection.release();
+      if (!client)
+        throw new DatabaseError(
+          "Couldn't find a client connection. Make sure that you have initialized the client connection before proceeding to this method."
+        );
+      client.release();
     } catch (error: any) {
+      console.log(error);
+
       if (error.code === "CONN_NOT_INIT") return;
       else throw new DatabaseError(error.message, error.code);
     }
   };
 
   /**
-   * Terminates the mysql connection pool.
+   * Terminates the MySQL connection pool.
    *
    * @returns A promise that resolves when the connection pool is terminated.
    * @throws DatabaseError - If there is an error terminating the connection pool.
@@ -122,13 +120,13 @@ const initializeDatabase = async (
  *
  * @param pool - The database connection pool.
  * @param dbName - The name of the database.
- * @param enableTransactions - Whether to enable transaction support. Default value is false.
+ * @param enableTransactions - Whether to enable transaction support. Default value is true.
  * @returns The middleware function.
  */
 export const TralseMySQL = (
-  pool: Pool,
+  pool: mysql.Pool,
   dbName: string,
-  enableTransactions: boolean = false
+  enableTransactions: boolean = true
 ) => {
   return async (
     req: TralseRequest,
@@ -163,7 +161,7 @@ export const TralseMySQL = (
  * @returns The MySQL database instance.
  * @throws If the specified database instance is not found.
  */
-export const getMysql = (
+export const getMySQL = (
   req: TralseRequest,
   name: string
 ): DatabaseInstance => {
@@ -174,79 +172,26 @@ export const getMysql = (
 };
 
 /**
- * Executes a database query with deadlock management.
- *
- * @remarks
- * This function allows executing database queries with deadlock management. It supports both individual and parallel asynchronous execution.
- *
- * @param conn - The MySQL connection.
- * @param sql - The SQL query or queries to execute.
- * @param params - The parameters for the SQL query or queries.
- * @param options - Optional settings for configuring query execution behavior.
- * @returns The result of the query or queries.
- * @throws DatabaseError - If query execution fails.
- *
- * @example
- * ```javascript
- * import { executeDbQuery } from "@tralse/mysql-middleware";
- *
- * const pool = mysql.createPool({
- *    // Database connection details
- *    host: "host",
- *    user: "username",
- *    password: "password",
- *    database: "db",
- *    connectionLimit: 10,
- *    port: 3306,
- *    waitForConnections: true,
- * });
- *
- *
- * // For individual execution
- * const getUser = async () => {
- *    const connection = await pool.getConnection();
- *    const sql = "SELECT * FROM users WHERE id = ?";
- *    const params = [userId];
- *
- *    try{
- *        const result = await executeDbQuery(connection, sql, params);
- *        return result;
- *    } catch(error){
- *        res.status(500).send(error.message);
- *    } finally {
- *      await connection.release();
- *    }
- * }
- *
- * // For parallel execution
- * const getUserParallel = async () => {
- *    const connection = await pool.getConnection();
- *    const sql = ["SELECT * FROM user_books WHERE id = ?", "SELECT * FROM users WHERE id = ?"];
- *    const params = [[userId], [userId]];
- *    const options = { parallel: true };
- *
- *    try{
- *        // Executes all query using Promise.all, running them simultaneously.
- *        // Remember when using this, no query must be dependent to each other.
- *        const result = await executeDbQuery(connection, sql, params, options);
- *        res.send(result);
- *    } catch(error){
- *        res.status(500).send(error.message);
- *    } finally {
- *      await connection.release();
- *    }
- * }
- *
- * ```
+ * Extracts rows from a MySQL query result or an array of query results.
+ * @param result - The result object or array of result objects from a MySQL query.
+ * @returns An array of rows extracted from the query results. If `result` is an array,
+ * returns an array where each element corresponds to the rows of each query result.
  */
-const executeQueryConn = async (
-  conn: Connection,
-  sql: string | string[],
-  params?: any[] | any[][],
-  options?: ExecuteDbQueryOptions
-): Promise<QueryResult | QueryResult[]> => {
-  return await executeDbQuery(conn, sql, params, options);
+export const extractRows = (
+  result:
+    | [mysql.QueryResult, mysql.FieldPacket[]]
+    | [mysql.QueryResult, mysql.FieldPacket[]][]
+): any[] => {
+  if (Array.isArray(result)) {
+    return (result as [mysql.QueryResult, mysql.FieldPacket[]][]).map(
+      (res) => res[0]
+    );
+  } else {
+    throw new DatabaseError(
+      `Expected result to be an array of [QueryResult, FieldPacket[]] tuples, but received ${typeof result}.`
+    );
+  }
 };
 
 export * from "./types/index";
-export { executeQueryConn as executeDbQuery };
+export { executeDbQuery };

@@ -1,44 +1,39 @@
-import { getDbObject, updateDbObject } from "./object";
 import { TransactionError, DatabaseError } from "../errors/error";
-import { TransactionMethods } from "../types";
-import { TralseRequest } from "../types";
+import { ExecuteDbQueryOptions, TransactionMethods } from "../types";
 import { log, LogState } from "@tralse/developer-logs";
 import { executeDbQuery } from "./query";
-import {
-  generateRefNo,
-  generateRefNo as systemGenerateReferenceNo,
-} from "../helpers/ref";
-import { QueryResult } from "mysql2/promise";
+import { generateRefNo as systemGenerateReferenceNo } from "../helpers/ref";
+import mysql from "mysql2/promise";
+
 /**
  * Initializes a transaction.
  *
- * @param req - The request object.
+ * @param client - The pool connection or client.
  * @returns The transaction methods.
  * @throws TransactionError - If there is an error initializing the transaction.
  */
 export const initializeDbTransaction = async (
-  req: TralseRequest
+  client: mysql.PoolConnection
 ): Promise<TransactionMethods> => {
+  let uuid: string;
+  let timestamp: string;
+
   /**
    * Initializes a transaction.
    *
-   * @returns A promise that resolves with the result of the SQL query or an array of results for multiple queries.
-   * @throws DatabaseError - If there is  an error occurs during execution.
+   * @returns A promise.
+   * @throws DatabaseError - If there is an error during execution.
    * @throws TransactionError - If the transaction initialization fails.
    */
   const init = async (): Promise<void> => {
     try {
       log.magenta(`Initializing transaction...`, "init", LogState.DEBUGMODE);
+      if (!client)
+        throw new DatabaseError(
+          "Couldn't find a client connection. Make sure that you have initialized the client connection before proceeding to this method."
+        );
 
-      const dbObject = getDbObject(req);
-
-      if (!dbObject || !dbObject.connection) {
-        throw new DatabaseError("Database object or connection is undefined.");
-      }
-
-      const { connection } = dbObject;
-
-      await connection.beginTransaction();
+      await client.beginTransaction();
 
       log.green(
         `Done. Transaction initialization success.`,
@@ -60,14 +55,17 @@ export const initializeDbTransaction = async (
    *
    * @param sql - The SQL query or an array of SQL queries to execute.
    * @param params - The parameters for the SQL query or an array of parameters for multiple queries.
+   * @param options - Optional settings for configuring query execution behavior.
    * @returns A promise that resolves with the result of the SQL query or an array of results for multiple queries.
    * @throws DatabaseError - If there is a mismatch between SQL queries and parameters or any other error occurs during execution.
    * @throws TransactionError - If the transaction initialization fails.
    */
   const query = async (
     sql: string | string[],
-    params: any | any[] = []
-  ): Promise<QueryResult | QueryResult[]> => {
+    params: any[] | any[][] = [],
+    options?: ExecuteDbQueryOptions
+  ): Promise<| [mysql.QueryResult, mysql.FieldPacket[]]
+  | [mysql.QueryResult, mysql.FieldPacket[]][]> => {
     try {
       log.magenta(
         `Executing transaction query...`,
@@ -75,18 +73,11 @@ export const initializeDbTransaction = async (
         LogState.DEBUGMODE
       );
 
-      const dbObject = getDbObject(req);
+      let queryResult = await executeDbQuery(client, sql, params, options);
 
-      if (!dbObject || !dbObject.connection) {
-        throw new DatabaseError("Database object or connection is undefined.");
-      }
-
-      const { connection } = dbObject;
-
-      let queryResult = await executeDbQuery(connection, sql, params);
-
-      const { uuid, timestamp } = systemGenerateReferenceNo();
-      updateDbObject(req, { referenceNo: uuid, timestamp });
+      const ref = systemGenerateReferenceNo();
+      timestamp = ref.timestamp;
+      uuid = ref.uuid;
 
       log.green(
         `Done. Transaction query execution success.`,
@@ -103,7 +94,7 @@ export const initializeDbTransaction = async (
       );
       if (error instanceof DatabaseError || error instanceof TransactionError)
         throw new TransactionError(
-          `Failed to initialize transaction: ${(error.message, error.code)}`
+          `Failed to execute transaction query: ${(error.message, error.code)}`
         );
       else throw error;
     }
@@ -117,12 +108,13 @@ export const initializeDbTransaction = async (
    */
   const commit = async (): Promise<void> => {
     try {
-      const dbObject = getDbObject(req);
-      if (!dbObject || !dbObject.connection) {
-        throw new DatabaseError("Database object or connection is undefined.");
-      }
       log.magenta(`Committing transaction...`, "commit", LogState.DEBUGMODE);
-      await dbObject.connection.commit();
+      if (!client)
+        throw new DatabaseError(
+          "Couldn't find a client connection. Make sure that you have initialized the client connection before proceeding to this method."
+        );
+
+      await client.commit();
       log.green(`Done. Commit success.`, "commit", LogState.DEBUGMODE);
     } catch (error: any) {
       log.red(
@@ -146,11 +138,9 @@ export const initializeDbTransaction = async (
    * @returns A promise that resolves when the transaction is rolled back.
    */
   const rollback = async (): Promise<void> => {
-    const dbObject = getDbObject(req);
-
-    if (dbObject && dbObject.connection) {
-      log.magenta(`Rollbacking transaction...`, "rollback", LogState.DEBUGMODE);
-      await dbObject.connection.rollback();
+    if (client) {
+      log.magenta(`Rolling back transaction...`, "rollback", LogState.DEBUGMODE);
+      await client.rollback();
       log.green(
         `Done. Transaction rollback success.`,
         "rollback",
@@ -170,37 +160,11 @@ export const initializeDbTransaction = async (
    *
    * @returns An object containing the connection status and other properties from the database object.
    */
-  const retrieve = () => {
-    let dbObject;
-
-    log.magenta(`Retrieving records...`, "retrieve", LogState.DEBUGMODE);
-
-    try {
-      dbObject = getDbObject(req);
-      log.green(
-        `Done. Connection is initialized`,
-        "retrieve",
-        LogState.DEBUGMODE
-      );
-
-      if (dbObject) {
-        const { timeoutId, ...newDbObject } = dbObject;
-        return {
-          ...newDbObject,
-          connection: !!newDbObject.connection,
-        };
-      } else {
-        throw new Error("dbObject is null or undefined.");
-      }
-    } catch (error: any) {
-      log.green(
-        `Done. Connection is not initialized`,
-        "retrieve",
-        LogState.DEBUGMODE
-      );
-      throw error;
-    }
-  };
+  const retrieve = () => ({
+    connection: !!client,
+    referenceNo: uuid,
+    timestamp,
+  });
 
   return {
     init,

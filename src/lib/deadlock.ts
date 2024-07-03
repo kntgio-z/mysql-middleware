@@ -1,4 +1,3 @@
-import { DatabaseError } from "../errors/error";
 import { QueryFunction } from "../types";
 import { log, LogState } from "@tralse/developer-logs";
 

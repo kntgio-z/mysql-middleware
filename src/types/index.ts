@@ -1,7 +1,7 @@
-import { PoolConnection as Connection, QueryResult } from "mysql2/promise";
+import mysql from "mysql2/promise";
 import { Request, Response, NextFunction } from "express";
 import { SessionData } from "express-session";
-// TODO: Revise
+
 export type QueryFunction = () => Promise<any>;
 
 /**
@@ -30,19 +30,9 @@ export interface TralseRequest extends Request {
 export interface TralseResponse extends Response {}
 export interface TralseNext extends NextFunction {}
 
-/**
- * Interface for DatabaseObject
- */
-export interface DatabaseObject {
-  connection: Connection;
-  referenceNo?: string | null;
-  timestamp?: string | number | null;
-  timeoutId?: string;
-}
-
 export interface DatabaseInstance {
   /**
-   * Initializes a mysql connection and serializes it into the request.
+   * Initializes a MySQL connection and serializes it into the request.
    *
    * @returns A promise that resolves when the connection is initialized.
    * @throws DatabaseError - If there is an error initializing the database connection.
@@ -53,14 +43,16 @@ export interface DatabaseInstance {
    *
    * @param sql - The SQL query string to execute.
    * @param params - The parameters for the SQL query.
+   * @param options - Optional settings for configuring query execution behavior.
    * @returns A promise that resolves with the query result.
    * @throws DatabaseError - If there is an error executing the query.
    */
   query: (
     sql: string,
-    params: any[],
+    params?: any[],
     options?: ExecuteDbQueryOptions
-  ) => Promise<QueryResult | QueryResult[]>;
+  ) => Promise<| [mysql.QueryResult, mysql.FieldPacket[]]
+  | [mysql.QueryResult, mysql.FieldPacket[]][]>;
   /**
    * Begins a database transaction.
    *
@@ -69,14 +61,14 @@ export interface DatabaseInstance {
    */
   transaction?: () => Promise<TransactionMethods>;
   /**
-   * Releases the current mysql connection.
+   * Releases the current MySQL connection.
    *
    * @returns A promise that resolves when the connection is released.
    * @throws DatabaseError - If there is an error releasing the connection.
    */
   releaseConnection: () => Promise<void>;
   /**
-   * Terminates the mysql connection pool.
+   * Terminates the MySQL connection pool.
    *
    * @returns A promise that resolves when the connection pool is terminated.
    * @throws DatabaseError - If there is an error terminating the connection pool.
@@ -98,6 +90,7 @@ export interface TransactionMethods {
    *
    * @param sql - The SQL query or an array of SQL queries to execute.
    * @param params - The parameters for the SQL query or an array of parameters for multiple queries.
+   * @param options - Optional settings for configuring query execution behavior.
    * @returns A promise that resolves with the result of the SQL query or an array of results for multiple queries.
    * @throws DatabaseError - If there is a mismatch between SQL queries and parameters or any other error occurs during execution.
    * @throws TransactionError - If the transaction initialization fails.
@@ -105,7 +98,8 @@ export interface TransactionMethods {
   query: (
     sql: string | string[],
     params?: any | any[]
-  ) => Promise<QueryResult | QueryResult[]>;
+  ) => Promise<| [mysql.QueryResult, mysql.FieldPacket[]]
+  | [mysql.QueryResult, mysql.FieldPacket[]][]>;
   /**
    * Commits the current transaction.
    *
@@ -127,6 +121,6 @@ export interface TransactionMethods {
   retrieve: () => {
     connection: boolean;
     referenceNo?: string | null | undefined;
-    timestamp?: string | number | null | undefined;
+    timestamp?: string | null | undefined;
   };
 }
