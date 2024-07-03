@@ -10,9 +10,9 @@
     "prestart": "npm test",
     "build": "tsup",
     "pub": "tsup && npm publish --access=public && exit",
-    "release": "standard-version",
-    "release:minor": "standard-version --release-as minor",
-    "release:major": "standard-version --release-as major"
+    "release": "standard-version && git push --follow-tags origin main",
+    "release:minor": "standard-version --release-as minor && git push --follow-tags origin main",
+    "release:major": "standard-version --release-as major && git push --follow-tags origin main"
   },
   "jest": {
     "testEnvironment": "node"
