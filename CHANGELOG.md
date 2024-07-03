@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [4.0.0](https://github.com/kntgio-z/mysql-middleware/compare/v3.2.0...v4.0.0) (2024-07-03)
+
+
+### Features
+
+* Revamp the logic of the middleware. Adopts the concept of @tralse/postgres-middleware logic for better execution ([940db1f](https://github.com/kntgio-z/mysql-middleware/commit/940db1f383f17ca03b57068f8239bf140621e98a))
+
 ## [3.2.0](https://github.com/kntgio-z/mysql-middleware/compare/v3.1.0...v3.2.0) (2024-06-17)
 
 
